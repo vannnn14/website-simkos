@@ -34,12 +34,12 @@ p-6 fixed left-0 top-0">
       Data Penghuni
     </a>
 
-    <a href="/simkos-web/tagihan.php"
+    <a href="/simkos-web/tagihan/index.php"
       class="<?= menuClass('tagihan', $active) ?>">
       Tagihan Utilitas
     </a>
 
-    <a href="/simkos-web/pembayaran.php"
+    <a href="/simkos-web/pembayaran/index.php"
       class="<?= menuClass('pembayaran', $active) ?>">
       Pembayaran
     </a>
