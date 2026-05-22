@@ -33,8 +33,8 @@
 <body class="bg-gray-100 dark:bg-[#0f0f0f]">
 
   <!-- SIDEBAR -->
+  <?php $active = 'dashboard'; ?>
   <?php include 'components/sidebar.php'; ?>
-
   <!-- MAIN -->
   <div class="ml-64 p-8">
 

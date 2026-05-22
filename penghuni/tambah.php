@@ -22,7 +22,7 @@
 <body class="bg-gray-100 dark:bg-[#0f0f0f]">
 
   <?php include '../components/sidebar.php'; ?>
-
+  <?php $active = 'tambah'; ?>
   <div class="ml-64 p-8">
 
     <?php include '../components/topbar.php'; ?>
