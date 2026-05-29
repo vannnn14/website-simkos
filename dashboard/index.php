@@ -37,13 +37,13 @@
 
   <!-- SIDEBAR -->
   <?php $active = 'dashboard'; ?>
-  <?php include 'components/sidebar.php'; ?>
+  <?php include '../components/sidebar.php'; ?>
 
   <!-- MAIN -->
   <div class="ml-64 p-8">
 
     <!-- TOPBAR -->
-    <?php include 'components/topbar.php'; ?>
+    <?php include '../components/topbar.php'; ?>
 
     <!-- ===== SUMMARY CARD ===== -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
