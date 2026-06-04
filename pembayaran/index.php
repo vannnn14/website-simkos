@@ -116,11 +116,11 @@
       border border-gray-100 dark:border-[#1f1f1f]">
 
       <p class="text-sm text-gray-500 dark:text-gray-400">
-        Total Tagihan
+        Total Penghuni
       </p>
 
       <h2 class="text-2xl font-bold text-blue-600 mt-3">
-        Rp 7.240.000
+        10 Orang
       </h2>
 
     </div>
@@ -131,11 +131,11 @@
       border border-gray-100 dark:border-[#1f1f1f]">
 
       <p class="text-sm text-gray-500 dark:text-gray-400">
-        Settlement
+        Lunas
       </p>
 
       <h2 class="text-2xl font-bold text-green-600 mt-3">
-        8 Orang
+        7 Orang
       </h2>
 
     </div>
@@ -146,7 +146,7 @@
       border border-gray-100 dark:border-[#1f1f1f]">
 
       <p class="text-sm text-gray-500 dark:text-gray-400">
-        Pending
+        Belum Lunas
       </p>
 
       <h2 class="text-2xl font-bold text-yellow-500 mt-3">
@@ -161,11 +161,11 @@
       border border-gray-100 dark:border-[#1f1f1f]">
 
       <p class="text-sm text-gray-500 dark:text-gray-400">
-        Total Pemasukan
+        Menunggak
       </p>
 
-      <h2 class="text-2xl font-bold text-purple-600 mt-3">
-        Rp 5.400.000
+      <h2 class="text-2xl font-bold text-red-600 mt-3">
+        1 Orang
       </h2>
 
     </div>
@@ -188,10 +188,9 @@
       <select class="input md:w-52">
 
         <option>Semua Status</option>
-        <option>Settlement</option>
-        <option>Pending</option>
-        <option>Expired</option>
-        <option>Cancel</option>
+        <option>Lunas</option>
+        <option>Belum Lunas</option>
+        <option>Menunggak</option>
 
       </select>
 
@@ -229,13 +228,11 @@
 
           <tr class="text-gray-500 dark:text-gray-400 text-sm">
 
-            <th class="pb-4">Nama</th>
-            <th>Kamar</th>
-            <th>Nominal</th>
-            <th>Deadline</th>
-            <th>Transaction ID</th>
-            <th>Status</th>
-            <th>Tanggal</th>
+            <th class="pb-4">Nama Lengkap</th>
+            <th>No. Kamar</th>
+            <th>NIK</th>
+            <th>No. HP</th>
+            <th>Status Pembayaran</th>
             <th>Aksi</th>
 
           </tr>
@@ -258,15 +255,11 @@
             </td>
 
             <td>
-              Rp 1.200.000
+              3201012345678901
             </td>
 
             <td>
-              05 Juni 2026
-            </td>
-
-            <td class="text-sm text-gray-500">
-              TRX-20260529-001
+              081234567890
             </td>
 
             <td>
@@ -274,14 +267,10 @@
               <span class="px-3 py-1 rounded-full text-xs
                 bg-green-100 text-green-600">
 
-                Settlement
+                Lunas
 
               </span>
 
-            </td>
-
-            <td>
-              29 Mei 2026
             </td>
 
             <td>
@@ -302,7 +291,7 @@
                   bg-green-100 text-green-600 text-sm
                   hover:opacity-80 transition">
 
-                  Invoice
+                  WhatsApp
 
                 </button>
 
@@ -326,15 +315,11 @@
             </td>
 
             <td>
-              Rp 600.000
+              3201019876543210
             </td>
 
             <td>
-              05 Juni 2026
-            </td>
-
-            <td class="text-sm text-gray-500">
-              TRX-20260529-002
+              085678901234
             </td>
 
             <td>
@@ -342,14 +327,10 @@
               <span class="px-3 py-1 rounded-full text-xs
                 bg-yellow-100 text-yellow-700">
 
-                Pending
+                Belum Lunas
 
               </span>
 
-            </td>
-
-            <td>
-              -
             </td>
 
             <td>
@@ -358,20 +339,19 @@
 
                 <button
                   class="px-3 py-2 rounded-xl
-                  bg-green-100 text-green-600 text-sm
+                  bg-blue-100 text-blue-600 text-sm
                   hover:opacity-80 transition">
 
-                  WhatsApp
+                  Detail
 
                 </button>
 
                 <button
                   class="px-3 py-2 rounded-xl
-                  bg-gray-200 dark:bg-[#1a1a1a]
-                  text-sm
+                  bg-green-100 text-green-600 text-sm
                   hover:opacity-80 transition">
 
-                  Detail
+                  WhatsApp
 
                 </button>
 
@@ -395,15 +375,11 @@
             </td>
 
             <td>
-              Rp 850.000
+              3201011122334455
             </td>
 
             <td>
-              03 Juni 2026
-            </td>
-
-            <td class="text-sm text-gray-500">
-              TRX-20260529-003
+              081122334455
             </td>
 
             <td>
@@ -411,14 +387,10 @@
               <span class="px-3 py-1 rounded-full text-xs
                 bg-red-100 text-red-600">
 
-                Expired
+                Menunggak
 
               </span>
 
-            </td>
-
-            <td>
-              28 Mei 2026
             </td>
 
             <td>
@@ -427,10 +399,10 @@
 
                 <button
                   class="px-3 py-2 rounded-xl
-                  bg-red-100 text-red-600 text-sm
+                  bg-blue-100 text-blue-600 text-sm
                   hover:opacity-80 transition">
 
-                  Generate Ulang
+                  Detail
 
                 </button>
 

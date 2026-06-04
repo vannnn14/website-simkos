@@ -79,29 +79,31 @@
           <!-- SEARCH -->
           <div class="relative w-full md:w-80">
 
-            <input
-              type="text"
-              placeholder="Cari penghuni..."
-              class="w-full h-12 rounded-2xl
-              bg-gray-100 dark:bg-[#0d0d0d]
-              border border-gray-200 dark:border-[#222]
-              px-5 outline-none
-              text-gray-800 dark:text-white"
-            >
+               <input
+      type="text"
+      id="searchInput"
+      placeholder="Cari penghuni..."
+      class="w-full h-12 rounded-2xl
+      bg-gray-100 dark:bg-[#0d0d0d]
+      border border-gray-200 dark:border-[#222]
+      px-5 outline-none
+      text-gray-800 dark:text-white"
+    >
 
           </div>
 
           <!-- FILTER -->
-          <select
-            class="h-12 px-4 rounded-2xl
-            bg-gray-100 dark:bg-[#0d0d0d]
-            border border-gray-200 dark:border-[#222]
-            text-gray-700 dark:text-gray-300
-            outline-none">
+                    <select
+              id="statusFilter"
+              class="h-12 px-4 rounded-2xl
+              bg-gray-100 dark:bg-[#0d0d0d]
+              border border-gray-200 dark:border-[#222]
+              text-gray-700 dark:text-gray-300
+              outline-none">
 
-            <option>Semua Status</option>
-            <option>Aktif</option>
-            <option>Nonaktif</option>
+              <option value="">Semua Status</option>
+              <option value="aktif">Aktif</option>
+              <option value="tidak aktif">Tidak Aktif</option>
 
           </select>
 
@@ -114,209 +116,154 @@
 
         <table class="w-full">
 
-          <!-- HEAD -->
-          <thead class="bg-gray-50 dark:bg-[#0d0d0d]">
+      <!-- HEAD -->
+<thead class="bg-gray-50 dark:bg-[#0d0d0d]">
 
-            <tr class="text-left text-sm text-gray-500 dark:text-gray-400">
+    <tr class="text-left text-sm text-gray-500 dark:text-gray-400">
 
-              <th class="px-6 py-5 font-medium">
-                Penghuni
-              </th>
+        <th class="px-6 py-5 font-medium">No</th>
 
-              <th class="px-6 py-5 font-medium">
-                Kamar
-              </th>
+        <th class="px-6 py-5 font-medium">Nama Lengkap</th>
 
-              <th class="px-6 py-5 font-medium">
-                No HP
-              </th>
+        <th class="px-6 py-5 font-medium">NIK</th>
 
-              <th class="px-6 py-5 font-medium">
-                Tanggal Masuk
-              </th>
+        <th class="px-6 py-5 font-medium">No Kamar</th>
 
-              <th class="px-6 py-5 font-medium">
-                Status
-              </th>
+        <th class="px-6 py-5 font-medium">No HP</th>
 
-              <th class="px-6 py-5 font-medium text-center">
-                Aksi
-              </th>
+        <th class="px-6 py-5 font-medium">Alamat</th>
 
-            </tr>
+        <th class="px-6 py-5 font-medium">Status Kamar</th>
 
-          </thead>
+        <th class="px-6 py-5 font-medium">Status Pembayaran</th>
 
-          <!-- BODY -->
-          <tbody class="text-gray-700 dark:text-gray-300">
+        <th class="px-6 py-5 font-medium text-center">Aksi</th>
 
-            <!-- ROW -->
-            <tr class="border-t border-gray-100 dark:border-[#1f1f1f]
-            hover:bg-gray-50 dark:hover:bg-[#151515] transition">
+    </tr>
 
-              <!-- USER -->
-              <td class="px-6 py-5">
+</thead>
+<tbody class="text-gray-700 dark:text-gray-300">
 
-                <div class="flex items-center gap-4">
+<?php
+include '../config/koneksi.php';
 
-                  <img
-                    src="https://i.pravatar.cc/100?img=12"
-                    class="w-12 h-12 rounded-full object-cover"
-                  >
+$cari = isset($_GET['cari']) ? $_GET['cari'] : '';
 
-                  <div>
+if($cari != ''){
+    $query = mysqli_query($conn,"
+        SELECT * FROM penghuni
+        WHERE nama_lengkap LIKE '%$cari%'
+        OR nik LIKE '%$cari%'
+        OR no_kamar LIKE '%$cari%'
+        OR no_hp LIKE '%$cari%'
+        OR alamat LIKE '%$cari%'
+    ");
+}else{
+    $query = mysqli_query($conn,"SELECT * FROM penghuni");
+}
 
-                    <h3 class="font-semibold text-gray-800 dark:text-white">
-                      Andi Saputra
-                    </h3>
+while($row = mysqli_fetch_assoc($query)) :
+?>
 
-                    <p class="text-sm text-gray-500">
-                      andi@gmail.com
-                    </p>
+<tr
+class="data-row border-t border-gray-100 dark:border-[#1f1f1f] hover:bg-gray-50 dark:hover:bg-[#151515] transition"
+data-status="<?= strtolower(trim($row['status_kamar'])); ?>">
 
-                  </div>
+    <td class="px-6 py-5">
+        <?= $row['no']; ?>
+    </td>
 
-                </div>
+    <td class="px-6 py-5">
+        <?= $row['nama_lengkap']; ?>
+    </td>
 
-              </td>
+    <td class="px-6 py-5">
+        <?= $row['nik']; ?>
+    </td>
 
-              <!-- ROOM -->
-              <td class="px-6 py-5">
-                A1
-              </td>
+    <td class="px-6 py-5">
+        <?= $row['no_kamar']; ?>
+    </td>
 
-              <!-- PHONE -->
-              <td class="px-6 py-5">
-                08123456789
-              </td>
+    <td class="px-6 py-5">
+        <?= $row['no_hp']; ?>
+    </td>
 
-              <!-- DATE -->
-              <td class="px-6 py-5">
-                12 Apr 2026
-              </td>
+    <td class="px-6 py-5">
+    <?= $row['alamat']; ?>
+</td>
 
-              <!-- STATUS -->
-              <td class="px-6 py-5">
+    <td class="px-6 py-5">
 
-                <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
-                  Aktif
-                </span>
+        <?php if($row['status_kamar'] == 'Aktif') : ?>
 
-              </td>
+            <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
+                Aktif
+            </span>
 
-              <!-- ACTION -->
-              <td class="px-6 py-5">
+        <?php else : ?>
 
-                <div class="flex items-center justify-center gap-2">
+            <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">
+                Tidak Aktif
+            </span>
 
-                  <button
-                    class="px-4 py-2 rounded-xl
-                    bg-blue-100 text-blue-600
-                    text-sm font-medium hover:opacity-80">
+        <?php endif; ?>
 
-                    Edit
+    </td>
 
-                  </button>
+    <td class="px-6 py-5">
 
-                  <button
-                    class="px-4 py-2 rounded-xl
-                    bg-red-100 text-red-500
-                    text-sm font-medium hover:opacity-80">
+        <?php if($row['status_pembayaran'] == 'Lunas') : ?>
 
-                    Hapus
+            <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
+                Lunas
+            </span>
 
-                  </button>
+        <?php elseif($row['status_pembayaran'] == 'Menunggak') : ?>
 
-                </div>
+            <span class="px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-600">
+                Menunggak
+            </span>
 
-              </td>
+        <?php else : ?>
 
-            </tr>
+            <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">
+                Belum Lunas
+            </span>
 
-            <!-- ROW -->
-            <tr class="border-t border-gray-100 dark:border-[#1f1f1f]
-            hover:bg-gray-50 dark:hover:bg-[#151515] transition">
+        <?php endif; ?>
 
-              <!-- USER -->
-              <td class="px-6 py-5">
+    </td>
 
-                <div class="flex items-center gap-4">
+    <td class="px-6 py-5">
 
-                  <img
-                    src="https://i.pravatar.cc/100?img=15"
-                    class="w-12 h-12 rounded-full object-cover"
-                  >
+    <div class="flex items-center justify-center gap-2">
 
-                  <div>
+        <a href="detail.php?id=<?= $row['no']; ?>"
+           class="px-4 py-2 rounded-xl bg-green-100 text-green-600 text-sm font-medium hover:opacity-80">
+            Detail
+        </a>
 
-                    <h3 class="font-semibold text-gray-800 dark:text-white">
-                      Budi Santoso
-                    </h3>
+        <a href="edit.php?id=<?= $row['no']; ?>"
+           class="px-4 py-2 rounded-xl bg-blue-100 text-blue-600 text-sm font-medium hover:opacity-80">
+            Edit
+        </a>
 
-                    <p class="text-sm text-gray-500">
-                      budi@gmail.com
-                    </p>
+        <a href="hapus.php?id=<?= $row['no']; ?>"
+           onclick="return confirm('Yakin ingin menghapus data ini?')"
+           class="px-4 py-2 rounded-xl bg-red-100 text-red-500 text-sm font-medium hover:opacity-80">
+            Hapus
+        </a>
 
-                  </div>
+    </div>
 
-                </div>
+</td>
 
-              </td>
+</tr>
 
-              <!-- ROOM -->
-              <td class="px-6 py-5">
-                A2
-              </td>
+<?php endwhile; ?>
 
-              <!-- PHONE -->
-              <td class="px-6 py-5">
-                08129876543
-              </td>
-
-              <!-- DATE -->
-              <td class="px-6 py-5">
-                15 Apr 2026
-              </td>
-
-              <!-- STATUS -->
-              <td class="px-6 py-5">
-
-                <span class="px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-600">
-                  Menunggak
-                </span>
-
-              </td>
-
-              <!-- ACTION -->
-              <td class="px-6 py-5">
-
-                <div class="flex items-center justify-center gap-2">
-
-                  <button
-                    class="px-4 py-2 rounded-xl
-                    bg-blue-100 text-blue-600
-                    text-sm font-medium hover:opacity-80">
-
-                    Edit
-
-                  </button>
-
-                  <button
-                    class="px-4 py-2 rounded-xl
-                    bg-red-100 text-red-500
-                    text-sm font-medium hover:opacity-80">
-
-                    Hapus
-
-                  </button>
-
-                </div>
-
-              </td>
-
-            </tr>
-
-          </tbody>
+</tbody>
 
         </table>
 
@@ -332,6 +279,45 @@
       document.documentElement.classList.toggle('dark')
     }
   </script>
+
+
+          <script>
+
+const searchInput = document.getElementById('searchInput');
+const statusFilter = document.getElementById('statusFilter');
+
+function filterData() {
+
+    let keyword = searchInput.value.toLowerCase();
+    let status = statusFilter.value.toLowerCase();
+
+    let rows = document.querySelectorAll('.data-row');
+
+    rows.forEach(function(row) {
+
+        let text = row.textContent.toLowerCase();
+        let rowStatus = row.dataset.status;
+
+        let cocokKeyword = text.includes(keyword);
+
+        let cocokStatus =
+            status === '' ||
+            rowStatus === status;
+
+        if (cocokKeyword && cocokStatus) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+
+    });
+
+}
+
+searchInput.addEventListener('keyup', filterData);
+statusFilter.addEventListener('change', filterData);
+
+</script>
 
 </body>
 </html>
