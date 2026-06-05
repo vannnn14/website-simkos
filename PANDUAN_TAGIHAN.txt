@@ -1,0 +1,297 @@
+================================================================================
+                    PANDUAN PENGGUNAAN SISTEM TAGIHAN
+                             SIMKOS v1.2
+================================================================================
+
+📍 UPDATED: 2026-06-06
+📝 Fitur: Sistem Pembagian Tagihan Berdasarkan Bobot Durasi Tinggal
+
+================================================================================
+                         CARA MENGGUNAKAN
+================================================================================
+
+LANGKAH 1: BUAT TAGIHAN BARU
+────────────────────────────────────────────────────────────────────────────
+
+1. Buka menu Tagihan → "Buat Tagihan Bulanan"
+   URL: http://localhost/simkos-web/tagihan/buat_tagihan.php
+
+2. Input biaya untuk bulan berjalan:
+   - Biaya Listrik (Rp)
+   - Biaya Air (Rp)
+   - Biaya Wifi (Rp)
+   - Biaya Sampah (Rp)
+
+3. Sistem akan menampilkan:
+   - Jumlah penghuni aktif (1 bulan)
+   - Jumlah penghuni setengah bulan
+   - Total bobot untuk perhitungan
+   - Contoh perhitungan jika total Rp 300.000
+
+4. Klik "✓ Buat Tagihan Bulanan"
+
+5. Sistem akan:
+   - Menghitung tarif per bobot
+   - Membagi biaya ke setiap penghuni sesuai bobot
+   - Menyimpan detail tagihan per penghuni
+   - Menampilkan pesan sukses
+
+LANGKAH 2: LIHAT PEMBAGIAN TAGIHAN
+────────────────────────────────────────────────────────────────────────────
+
+1. Buka menu Tagihan → "Pembagian Tagihan"
+   URL: http://localhost/simkos-web/tagihan/pembagian.php
+
+2. Pilih bulan tagihan dari dropdown
+
+3. Sistem akan menampilkan:
+   - Ringkasan total tagihan & bobot
+   - Jumlah penghuni aktif & setengah bulan
+   - Total biaya per kategori (penghuni aktif vs setengah)
+   - Tabel detail pembagian per penghuni:
+     * Nama, kamar, status
+     * Bobot penghuni
+     * Breakdown: Listrik, Air, Wifi, Sampah
+     * Total tagihan per orang
+     * Status pembayaran
+
+4. Penjelasan di bagian bawah:
+   - Rumus perhitungan
+   - Contoh kalkulasi
+   - Penjelasan sistem bobot
+
+================================================================================
+                      SISTEM PERHITUNGAN DETAIL
+================================================================================
+
+RUMUS UMUM:
+──────────
+
+Total Bobot = (Jumlah Aktif × 1.0) + (Jumlah Setengah × 0.5)
+Tarif per Bobot = Total Tagihan ÷ Total Bobot
+Tagihan Penghuni = Tarif per Bobot × Bobot Penghuni
+
+
+CONTOH NYATA:
+─────────────
+
+Skenario:
+  • Total Tagihan = Rp 300.000
+  • Penghuni Aktif = 2 orang
+  • Penghuni Setengah = 1 orang
+
+Perhitungan:
+  1. Total Bobot = (2 × 1.0) + (1 × 0.5) = 2.5
+  
+  2. Tarif per Bobot = Rp 300.000 ÷ 2.5 = Rp 120.000
+  
+  3. Tagihan Masing-Masing:
+     • Irvan Maulana (Aktif): Rp 120.000 × 1.0 = Rp 120.000 ✓
+     • Deko Wirayuda (Setengah): Rp 120.000 × 0.5 = Rp 60.000 ✓
+     • Subhy (Aktif): Rp 120.000 × 1.0 = Rp 120.000 ✓
+     
+  4. TOTAL: Rp 120.000 + Rp 60.000 + Rp 120.000 = Rp 300.000 ✓
+
+
+BREAKDOWN BIAYA PER KOMPONEN:
+──────────────────────────────
+
+Untuk setiap biaya, sistem menghitung sebagai berikut:
+
+┌─────────────┬──────────────────────┬─────────────────────┐
+│ Komponen    │ Penghuni Aktif       │ Penghuni Setengah   │
+├─────────────┼──────────────────────┼─────────────────────┤
+│ Listrik     │ Dibagi per bobot     │ Dibagi per bobot    │
+│ Air         │ Dibagi rata aktif    │ TIDAK BAYAR         │
+│ Wifi        │ Dibagi rata aktif    │ TIDAK BAYAR         │
+│ Sampah      │ Dibagi rata aktif    │ TIDAK BAYAR         │
+└─────────────┴──────────────────────┴─────────────────────┘
+
+PENJELASAN:
+───────────
+
+✓ LISTRIK (Proporsional berdasarkan Bobot):
+  • Dibagi ke SEMUA penghuni sesuai bobot mereka
+  • Penghuni Aktif: Listrik ÷ Total Bobot × 1.0
+  • Penghuni Setengah: Listrik ÷ Total Bobot × 0.5
+  • Alasan: Lebih adil karena penghuni setengah bulan pakai lebih sedikit
+
+✓ AIR, WIFI, SAMPAH (Hanya untuk Penghuni Aktif):
+  • Hanya dibagi ke penghuni yang tinggal FULL 1 BULAN
+  • Dibagi rata ke jumlah penghuni aktif
+  • Penghuni setengah bulan TIDAK bayar
+  • Alasan: Mereka tidak menggunakan layanan selama sebulan penuh
+
+
+CONTOH PERHITUNGAN LENGKAP:
+──────────────────────────
+
+Input:
+  • Listrik: Rp 100.000
+  • Air: Rp 50.000
+  • Wifi: Rp 100.000
+  • Sampah: Rp 50.000
+  • Total: Rp 300.000
+
+Penghuni:
+  • Irvan (Aktif) - Bobot 1.0
+  • Deko (Setengah) - Bobot 0.5
+  • Subhy (Aktif) - Bobot 1.0
+
+Perhitungan:
+
+1. Listrik (Rp 100.000):
+   Total Bobot = 2.5
+   Tarif Listrik/Bobot = Rp 100.000 ÷ 2.5 = Rp 40.000
+   
+   • Irvan: Rp 40.000 × 1.0 = Rp 40.000
+   • Deko: Rp 40.000 × 0.5 = Rp 20.000
+   • Subhy: Rp 40.000 × 1.0 = Rp 40.000
+   ✓ Total: Rp 100.000
+
+2. Air (Rp 50.000) - Hanya Aktif:
+   Jumlah Aktif = 2
+   Tarif Air = Rp 50.000 ÷ 2 = Rp 25.000
+   
+   • Irvan: Rp 25.000
+   • Deko: Rp 0 (tidak aktif)
+   • Subhy: Rp 25.000
+   ✓ Total: Rp 50.000
+
+3. Wifi (Rp 100.000) - Hanya Aktif:
+   Jumlah Aktif = 2
+   Tarif Wifi = Rp 100.000 ÷ 2 = Rp 50.000
+   
+   • Irvan: Rp 50.000
+   • Deko: Rp 0 (tidak aktif)
+   • Subhy: Rp 50.000
+   ✓ Total: Rp 100.000
+
+4. Sampah (Rp 50.000) - Hanya Aktif:
+   Jumlah Aktif = 2
+   Tarif Sampah = Rp 50.000 ÷ 2 = Rp 25.000
+   
+   • Irvan: Rp 25.000
+   • Deko: Rp 0 (tidak aktif)
+   • Subhy: Rp 25.000
+   ✓ Total: Rp 50.000
+
+FINAL TAGIHAN PER PENGHUNI:
+────────────────────────────
+
+┌─────────────┬──────────┬─────────┬────────┬────────┬─────────┐
+│ Nama        │ Listrik  │ Air     │ Wifi   │ Sampah │ TOTAL   │
+├─────────────┼──────────┼─────────┼────────┼────────┼─────────┤
+│ Irvan       │ 40.000   │ 25.000  │ 50.000 │ 25.000 │ 140.000 │
+│ Deko        │ 20.000   │ 0       │ 0      │ 0      │ 20.000  │
+│ Subhy       │ 40.000   │ 25.000  │ 50.000 │ 25.000 │ 140.000 │
+├─────────────┼──────────┼─────────┼────────┼────────┼─────────┤
+│ TOTAL       │100.000   │ 50.000  │100.000 │ 50.000 │ 300.000 │
+└─────────────┴──────────┴─────────┴────────┴────────┴─────────┘
+
+✓ Irvan bayar Rp 140.000 (full 1 bulan)
+✓ Deko bayar Rp 20.000 (setengah bulan - cuma listrik)
+✓ Subhy bayar Rp 140.000 (full 1 bulan)
+✓ TOTAL Rp 300.000 ✓
+
+
+================================================================================
+                         FITUR-FITUR TERSEDIA
+================================================================================
+
+1. BUAT TAGIHAN (buat_tagihan.php)
+   ✓ Form input biaya utilitas
+   ✓ Preview perhitungan & bobot
+   ✓ Automatic distribution ke penghuni
+   ✓ Database transaction untuk consistency
+   ✓ Confirmation message
+
+2. PEMBAGIAN TAGIHAN (pembagian.php)
+   ✓ Lihat detail pembagian per penghuni
+   ✓ Breakdown komponen biaya (Listrik, Air, Wifi, Sampah)
+   ✓ Status pembayaran per penghuni
+   ✓ Ringkasan statistik
+   ✓ Penjelasan sistem
+
+3. API ENDPOINT (get_pembagian.php)
+   ✓ JSON response dengan detail lengkap
+   ✓ Untuk integrasi dengan aplikasi lain
+   ✓ GET /tagihan/get_pembagian.php?tagihan_id=X
+
+================================================================================
+                            TIPS & TRIK
+================================================================================
+
+✓ Pastikan semua penghuni sudah di-input dengan status kamar yang benar
+  (Aktif atau Tidak Aktif)
+
+✓ Gunakan halaman Pembagian untuk preview sebelum penghuni lihat tagihan
+
+✓ Jika ada penghuni yang keluar di tengah bulan, ubah statusnya jadi
+  "Tidak Aktif" untuk pembagian yang adil
+
+✓ Biaya listrik akan selalu ada untuk semua penghuni, tapi air/wifi/sampah
+  hanya untuk yang aktif full bulan
+
+✓ Gunakan API endpoint jika ingin integrasi dengan sistem pembayaran lain
+
+================================================================================
+                        TROUBLESHOOTING
+================================================================================
+
+❌ MASALAH: Tagihan tidak muncul di halaman pembagian
+   ✓ SOLUSI:
+     1. Pastikan sudah membuat tagihan di halaman buat_tagihan.php
+     2. Check database: pastikan ada data di table tagihan_utilitas
+     3. Refresh halaman browser
+     4. Clear browser cache jika perlu
+
+❌ MASALAH: Total tagihan tidak sesuai
+   ✓ SOLUSI:
+     1. Check perhitungan manual
+     2. Pastikan bobot sudah benar
+     3. Lihat breakdown di detail pembagian
+     4. Hubungi support jika ada yang tidak jelas
+
+❌ MASALAH: Penghuni setengah bulan bayar full
+   ✓ SOLUSI:
+     1. Pastikan status kamar sudah di-set ke "Tidak Aktif"
+     2. Buat tagihan ulang setelah update status
+     3. Atau edit status kamar di menu Penghuni
+
+================================================================================
+                         CATATAN PENTING
+================================================================================
+
+⚠️ BACKUP DATABASE SECARA BERKALA
+   Jangan sampai data tagihan hilang!
+
+⚠️ VERIFIKASI PERHITUNGAN
+   Selalu review total sebelum memberitahu penghuni
+
+⚠️ KOMUNIKASI JELAS
+   Jelaskan sistem bobot ke penghuni agar tidak ada kebingungan
+
+⚠️ KONSISTENSI STATUS
+   Update status kamar penghuni dengan akurat dan tepat waktu
+
+================================================================================
+                          VERSION HISTORY
+================================================================================
+
+v1.2 (2026-06-06)
+  ✓ Tambah halaman buat_tagihan.php
+  ✓ Fix pembagian.php untuk display data lebih baik
+  ✓ Tambah get_pembagian.php API endpoint
+
+v1.1 (2026-06-06)
+  ✓ Fix database schema
+  ✓ Perbaiki simpan_tagihan.php logic
+  ✓ Update SQL dengan 6 tables lengkap
+
+v1.0 (2026-06-06)
+  ✓ Initial project setup
+  ✓ Create PROJECT_SUMMARY.txt
+  ✓ Sistem tagihan dengan bobot
+
+================================================================================

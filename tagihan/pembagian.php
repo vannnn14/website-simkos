@@ -113,17 +113,23 @@ if ($selected_tagihan_id) {
         <!-- Select Tagihan -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
             <label class="block text-sm font-semibold mb-3">Pilih Bulan Tagihan:</label>
-            <form method="GET" class="flex gap-4 items-end">
-                <select name="tagihan_id" class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700" onchange="this.form.submit()">
-                    <option value="">-- Pilih Tagihan --</option>
-                    <?php foreach ($daftar_tagihan as $t): ?>
-                        <option value="<?php echo $t['id']; ?>" <?php echo $selected_tagihan_id == $t['id'] ? 'selected' : ''; ?>>
-                            <?php echo ucfirst($t['bulan']) . ' ' . $t['tahun']; ?> 
-                            (Rp <?php echo number_format($t['total_tagihan'], 0); ?>) - <?php echo $t['jumlah_penghuni']; ?> penghuni
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </form>
+            <?php if (count($daftar_tagihan) > 0): ?>
+                <form method="GET" class="flex gap-4 items-end">
+                    <select name="tagihan_id" class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700" onchange="this.form.submit()">
+                        <option value="">-- Pilih Tagihan --</option>
+                        <?php foreach ($daftar_tagihan as $t): ?>
+                            <option value="<?php echo $t['id']; ?>" <?php echo $selected_tagihan_id == $t['id'] ? 'selected' : ''; ?>>
+                                <?php echo ucfirst($t['bulan']) . ' ' . $t['tahun']; ?> 
+                                (Rp <?php echo number_format(floatval($t['total_tagihan']), 0); ?>) - <?php echo intval($t['jumlah_penghuni']); ?> penghuni
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </form>
+            <?php else: ?>
+                <div class="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+                    <p class="text-blue-700 dark:text-blue-200">📋 Belum ada tagihan. <a href="buat_tagihan.php" class="font-bold underline">Buat tagihan baru</a></p>
+                </div>
+            <?php endif; ?>
         </div>
 
         <?php if ($pembagian_data): ?>
