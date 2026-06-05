@@ -144,14 +144,14 @@ mysqli_begin_transaction($conn);
 
 try {
     // ─────────────────────────────────────────────────────────────────────────
-    // 5A. INSERT DATA TAGIHAN UTAMA KE TABLE 'tagihan'
+    // 5A. INSERT DATA TAGIHAN UTAMA KE TABLE 'tagihan_utilitas'
     // ─────────────────────────────────────────────────────────────────────────
     
     $stmtTagihan = mysqli_prepare($conn, "
-        INSERT INTO tagihan 
-            (bulan, tahun, nominal_total, bobot_penghuni, 
-             status, tanggal_jatuh_tempo, tanggal_dibuat)
-        VALUES (?, ?, ?, ?, ?, ?, NOW())
+        INSERT INTO tagihan_utilitas 
+            (bulan, tahun, biaya_listrik, biaya_air, biaya_wifi, biaya_sampah,
+             total_penghuni, total_tagihan, total_bobot, tarif_per_bobot, tenggat_pembayaran)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
 
     if (!$stmtTagihan) {
@@ -160,16 +160,19 @@ try {
 
     mysqli_stmt_bind_param(
         $stmtTagihan,
-        'iidids',
-        $bulan_int,
+        'siddddiddds',
+        $bulan_text,
         $tahun,
+        $biaya_listrik,
+        $biaya_air,
+        $biaya_wifi,
+        $biaya_sampah,
+        $totalPenghuni,
         $total_tagihan,
         $totalBobot,
-        $status_tagihan,
+        $tarifPerBobot,
         $tenggat
     );
-
-    $status_tagihan = 'Belum Bayar';
 
     if (!mysqli_stmt_execute($stmtTagihan)) {
         throw new Exception('Execute insert tagihan gagal: ' . mysqli_error($conn));
@@ -182,10 +185,9 @@ try {
     // ─────────────────────────────────────────────────────────────────────────
 
     $qPenghuni = mysqli_query($conn, "
-        SELECT id, nama, status_kamar 
+        SELECT no, nama_lengkap, status_kamar 
         FROM penghuni 
-        WHERE 1=1
-        ORDER BY nama ASC
+        ORDER BY nama_lengkap ASC
     ");
 
     if (!$qPenghuni) {
@@ -193,10 +195,10 @@ try {
     }
 
     $stmtDetail = mysqli_prepare($conn, "
-        INSERT INTO tagihan 
-            (id_penghuni, bulan, tahun, nominal_total, nominal_penghuni, 
-             bobot_penghuni, status, tanggal_jatuh_tempo, tanggal_dibuat)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        INSERT INTO detail_tagihan 
+            (tagihan_id, penghuni_id, bobot, nominal_tagihan, status_bayar,
+             tagihan_listrik, tagihan_wifi, tagihan_air, tagihan_sampah)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
 
     if (!$stmtDetail) {
@@ -207,37 +209,51 @@ try {
     $total_nominal_check = 0;
 
     while ($p = mysqli_fetch_assoc($qPenghuni)) {
-        $penghuni_id = $p['id'];
+        $penghuni_id = $p['no'];
 
         // SISTEM BOBOT:
-        // Penghuni Aktif = bobot 1.0
-        // Penghuni Tidak Aktif = bobot 0.5
+        // Penghuni Aktif = bobot 1.0 (full 1 bulan)
+        // Penghuni Tidak Aktif = bobot 0.5 (setengah bulan)
         $bobot = ($p['status_kamar'] === 'Aktif') ? 1.0 : 0.5;
 
-        // Hitung nominal penghuni berdasarkan bobot mereka
-        $nominal_penghuni = $tarifPerBobot * $bobot;
+        // PERHITUNGAN BIAYA PER PENGHUNI:
+        // Listrik dibagi proporsional berdasarkan bobot (untuk semua penghuni)
+        $tListrik = ($biaya_listrik / $totalBobot) * $bobot;
 
-        // Track total untuk validasi
+        // Air, Wifi, Sampah hanya untuk penghuni Aktif (full 1 bulan)
+        if ($p['status_kamar'] === 'Aktif') {
+            $tAir    = $jumlahAktif > 0 ? $biaya_air    / $jumlahAktif : 0;
+            $tWifi   = $jumlahAktif > 0 ? $biaya_wifi   / $jumlahAktif : 0;
+            $tSampah = $jumlahAktif > 0 ? $biaya_sampah / $jumlahAktif : 0;
+        } else {
+            $tAir    = 0;
+            $tWifi   = 0;
+            $tSampah = 0;
+        }
+
+        // Total nominal tagihan penghuni
+        $nominal_penghuni = $tListrik + $tAir + $tWifi + $tSampah;
         $total_nominal_check += $nominal_penghuni;
 
-        $status_detail = 'Belum Bayar';
+        $status_bayar = 'Belum Bayar';
 
         mysqli_stmt_bind_param(
             $stmtDetail,
-            'iiidddis',
+            'iiddsdddd',
+            $tagihan_id,
             $penghuni_id,
-            $bulan_int,
-            $tahun,
-            $total_tagihan,
-            $nominal_penghuni,
             $bobot,
-            $status_detail,
-            $tenggat
+            $nominal_penghuni,
+            $status_bayar,
+            $tListrik,
+            $tWifi,
+            $tAir,
+            $tSampah
         );
 
         if (!mysqli_stmt_execute($stmtDetail)) {
             throw new Exception(
-                'Insert detail tagihan untuk penghuni ' . $p['nama'] . ' gagal: ' . 
+                'Insert detail tagihan untuk penghuni ' . $p['nama_lengkap'] . ' gagal: ' . 
                 mysqli_error($conn)
             );
         }
