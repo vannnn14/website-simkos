@@ -164,7 +164,23 @@ $qRiwayat = mysqli_query($conn, "
 
     <div class="mb-6">
       <h2 class="text-xl font-semibold">Pembagian Penghuni</h2>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Simulasi pembagian tagihan tiap penghuni</p>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        <?php 
+          // Ambil tagihan terbaru untuk preview
+          $qTagihanTerbaru = mysqli_query($conn, "
+            SELECT * FROM tagihan_utilitas 
+            ORDER BY tahun DESC, FIELD(bulan, 'January','February','March','April','May','June','July','August','September','October','November','December') DESC 
+            LIMIT 1
+          ");
+          $tagihanTerbaru = mysqli_fetch_assoc($qTagihanTerbaru);
+          
+          if ($tagihanTerbaru) {
+            echo "Pembagian untuk " . $tagihanTerbaru['bulan'] . " " . $tagihanTerbaru['tahun'];
+          } else {
+            echo "Simulasi pembagian tagihan tiap penghuni";
+          }
+        ?>
+      </p>
     </div>
 
     <div class="overflow-x-auto">
@@ -172,17 +188,84 @@ $qRiwayat = mysqli_query($conn, "
         <thead>
           <tr class="text-gray-500 dark:text-gray-400 text-sm">
             <th class="pb-4">Nama</th>
+            <th>Kamar</th>
             <th>Status Tinggal</th>
             <th>Bobot</th>
-            <th>Tagihan</th>
+            <th>Listrik</th>
+            <th>Air</th>
+            <th>Wifi</th>
+            <th>Sampah</th>
+            <th class="text-right">Total Tagihan</th>
           </tr>
         </thead>
         <tbody id="listPembagian">
 
           <?php
-          $queryPenghuni = mysqli_query($conn, "SELECT * FROM penghuni");
-          while ($p = mysqli_fetch_assoc($queryPenghuni)):
-            $bobot = ($p['status_kamar'] === 'Aktif') ? 1 : 0.5;
+          // Ambil semua penghuni
+          $queryPenghuni = mysqli_query($conn, "SELECT * FROM penghuni ORDER BY status_kamar DESC, nama_lengkap ASC");
+          
+          if ($tagihanTerbaru) {
+            // Jika ada tagihan terbaru, tampilkan pembagian dari database
+            $tagihan_id = $tagihanTerbaru['id'];
+            $biaya_listrik = floatval($tagihanTerbaru['biaya_listrik']);
+            $biaya_air = floatval($tagihanTerbaru['biaya_air']);
+            $biaya_wifi = floatval($tagihanTerbaru['biaya_wifi']);
+            $biaya_sampah = floatval($tagihanTerbaru['biaya_sampah']);
+            $total_bobot = floatval($tagihanTerbaru['total_bobot']);
+            
+            $qDetail = mysqli_query($conn, "
+              SELECT dt.*, p.no_kamar 
+              FROM detail_tagihan dt 
+              JOIN penghuni p ON dt.penghuni_id = p.no 
+              WHERE dt.tagihan_id = $tagihan_id
+              ORDER BY p.status_kamar DESC, p.nama_lengkap ASC
+            ");
+            
+            while ($detail = mysqli_fetch_assoc($qDetail)):
+              $bobot = floatval($detail['bobot']);
+              $tListrik = floatval($detail['tagihan_listrik']);
+              $tAir = floatval($detail['tagihan_air']);
+              $tWifi = floatval($detail['tagihan_wifi']);
+              $tSampah = floatval($detail['tagihan_sampah']);
+              $nominal = floatval($detail['nominal_tagihan']);
+              
+              $pDetail = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM penghuni WHERE no = {$detail['penghuni_id']}"));
+              $status_label = $pDetail['status_kamar'] === 'Aktif' ? 'Aktif (Full)' : 'Tidak Aktif (Setengah)';
+          ?>
+
+          <tr class="penghuni-row border-t border-gray-100 dark:border-[#222] hover:bg-gray-50 dark:hover:bg-[#1a1a1a]"
+              data-status="<?= $pDetail['status_kamar'] ?>"
+              data-bobot="<?= $bobot ?>">
+
+            <td class="py-4"><?= htmlspecialchars($pDetail['nama_lengkap']) ?></td>
+
+            <td><?= $pDetail['no_kamar'] ?></td>
+
+            <td>
+              <?php if ($pDetail['status_kamar'] === 'Aktif'): ?>
+                <span class="px-3 py-1 rounded-full text-xs bg-green-100 text-green-600 font-semibold">Aktif (Full)</span>
+              <?php else: ?>
+                <span class="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-600 font-semibold">Setengah</span>
+              <?php endif; ?>
+            </td>
+
+            <td class="font-semibold"><?= $bobot ?>x</td>
+
+            <td>Rp <?= number_format($tListrik, 0, ',', '.') ?></td>
+            <td>Rp <?= number_format($tAir, 0, ',', '.') ?></td>
+            <td>Rp <?= number_format($tWifi, 0, ',', '.') ?></td>
+            <td>Rp <?= number_format($tSampah, 0, ',', '.') ?></td>
+
+            <td class="font-bold text-right text-blue-600">Rp <?= number_format($nominal, 0, ',', '.') ?></td>
+
+          </tr>
+
+          <?php 
+            endwhile;
+          } else {
+            // Jika belum ada tagihan, tampilkan simulasi saja
+            while ($p = mysqli_fetch_assoc($queryPenghuni)):
+              $bobot = ($p['status_kamar'] === 'Aktif') ? 1 : 0.5;
           ?>
 
           <tr class="penghuni-row border-t border-gray-100 dark:border-[#222]"
@@ -191,25 +274,47 @@ $qRiwayat = mysqli_query($conn, "
 
             <td class="py-4"><?= htmlspecialchars($p['nama_lengkap']) ?></td>
 
+            <td><?= $p['no_kamar'] ?></td>
+
             <td>
               <?php if ($p['status_kamar'] === 'Aktif'): ?>
-                <span class="px-3 py-1 rounded-full text-xs bg-green-100 text-green-600">Aktif</span>
+                <span class="px-3 py-1 rounded-full text-xs bg-green-100 text-green-600 font-semibold">Aktif (Full)</span>
               <?php else: ?>
-                <span class="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-600">Tidak Aktif</span>
+                <span class="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-600 font-semibold">Setengah</span>
               <?php endif; ?>
             </td>
 
-            <td><?= $bobot ?>x</td>
+            <td class="font-semibold"><?= $bobot ?>x</td>
 
-            <td class="font-medium nominal-tagihan">Rp 0</td>
+            <td class="nominal-listrik">Rp 0</td>
+            <td class="nominal-air">Rp 0</td>
+            <td class="nominal-wifi">Rp 0</td>
+            <td class="nominal-sampah">Rp 0</td>
+
+            <td class="font-bold text-right text-blue-600 nominal-tagihan">Rp 0</td>
 
           </tr>
 
-          <?php endwhile; ?>
+          <?php endwhile;
+          }
+          ?>
 
         </tbody>
       </table>
     </div>
+
+    <?php if ($tagihanTerbaru): ?>
+    <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900 rounded-lg border border-blue-200 dark:border-blue-700">
+      <div class="text-sm">
+        <p class="font-semibold text-blue-900 dark:text-blue-100">📊 Ringkasan:</p>
+        <p class="text-blue-800 dark:text-blue-200 mt-2">
+          Total Tagihan: <strong>Rp <?= number_format(floatval($tagihanTerbaru['total_tagihan']), 0, ',', '.') ?></strong> | 
+          Total Bobot: <strong><?= floatval($tagihanTerbaru['total_bobot']) ?></strong> | 
+          Tarif/Bobot: <strong>Rp <?= number_format(floatval($tagihanTerbaru['tarif_per_bobot']), 0, ',', '.') ?></strong>
+        </p>
+      </div>
+    </div>
+    <?php endif; ?>
 
   </div>
 
@@ -249,10 +354,20 @@ function hitungTotal() {
       const tWifi    = status === 'Aktif' && jumlahAktif > 0 ? wifi   / jumlahAktif : 0;
       const tSampah  = status === 'Aktif' && jumlahAktif > 0 ? sampah / jumlahAktif : 0;
 
-      row.querySelector('.nominal-tagihan').innerText =
-        formatRupiah(tListrik + tAir + tWifi + tSampah);
+      const nominal = tListrik + tAir + tWifi + tSampah;
+
+      // Update breakdown components if they exist
+      if (row.querySelector('.nominal-listrik')) {
+        row.querySelector('.nominal-listrik').innerText = formatRupiah(tListrik);
+        row.querySelector('.nominal-air').innerText = formatRupiah(tAir);
+        row.querySelector('.nominal-wifi').innerText = formatRupiah(tWifi);
+        row.querySelector('.nominal-sampah').innerText = formatRupiah(tSampah);
+      }
+      
+      row.querySelector('.nominal-tagihan').innerText = formatRupiah(nominal);
     });
   }
+}
 }
 
 document.querySelectorAll('#listrik,#air,#wifi,#sampah')
