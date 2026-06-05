@@ -1,0 +1,493 @@
+================================================================================
+                        SIMKOS - SISTEM INFORMASI KOS
+                           PROJECT SUMMARY
+================================================================================
+
+PROJECT NAME    : SIMKOS (Sistem Informasi Kos)
+DESCRIPTION     : Aplikasi web untuk mengelola kos, penghuni, tagihan, dan pembayaran
+TECHNOLOGY STACK: PHP, MySQL, Tailwind CSS, Chart.js
+DATABASE        : simkos
+SERVER          : Apache (XAMPP)
+
+================================================================================
+                            PROJECT STRUCTURE
+================================================================================
+
+/auth/
+  - login.php           : Halaman login pengguna
+  - register.php        : Halaman registrasi pengguna
+
+/components/
+  - sidebar.php         : Komponen navigasi sidebar
+  - topbar.php          : Komponen top navigation bar
+
+/config/
+  - koneksi.php         : File konfigurasi koneksi database MySQL
+
+/dashboard/
+  - index.php           : Halaman dashboard utama dengan statistik
+
+/payment-gateway/
+  - index.php           : Integrasi payment gateway
+
+/pembayaran/
+  - detail.php          : Detail pembayaran
+  - edit.php            : Edit data pembayaran
+  - index.php           : Daftar pembayaran
+  - tambah.php          : Tambah pembayaran baru
+
+/penghuni/
+  - detail.php          : Detail penghuni
+  - edit.php            : Edit data penghuni
+  - hapus.php           : Hapus data penghuni
+  - index.php           : Daftar penghuni
+  - tambah.php          : Tambah penghuni baru
+
+/tagihan/
+  - detail.php          : Detail tagihan
+  - edit.php            : Edit tagihan
+  - index.php           : Daftar tagihan
+  - [tambah.php]        : Tambah tagihan baru
+
+================================================================================
+                        FITUR UTAMA APLIKASI
+================================================================================
+
+1. MANAJEMEN PENGHUNI
+   - Tambah penghuni baru
+   - Edit data penghuni
+   - Lihat detail penghuni
+   - Hapus penghuni
+   - Status kamar (Aktif/Tidak Aktif)
+
+2. MANAJEMEN TAGIHAN
+   - Buat tagihan bulanan
+   - Kelola tagihan penghuni
+   - Lihat detail tagihan
+   - Hitung tagihan dengan sistem pembobototan durasi tinggal
+   - Edit tagihan
+
+3. MANAJEMEN PEMBAYARAN
+   - Catat pembayaran dari penghuni
+   - Lihat riwayat pembayaran
+   - Integrasi payment gateway
+
+4. DASHBOARD
+   - Tampilkan statistik penghuni aktif/tidak aktif
+   - Visualisasi data dengan Chart.js
+   - Overview keuangan kos
+
+5. AUTHENTICATION
+   - Login system
+   - Register system
+
+================================================================================
+                    CATATAN PENTING - FUNGSI TAGIHAN
+================================================================================
+
+*** SISTEM PERHITUNGAN TAGIHAN BERDASARKAN DURASI TINGGAL ***
+
+KONSEP UMUM:
+- Penghuni yang tinggal FULL 1 BULAN membayar FULL
+- Penghuni yang tinggal SETENGAH BULAN membayar SETENGAH
+- Menggunakan sistem BOBOT untuk kalkulasi yang adil
+
+ALGORITMA PERHITUNGAN:
+
+1. STATUS KAMAR:
+   - "Aktif"       → Bobot = 1 (Full 1 bulan)
+   - "Tidak Aktif" → Bobot = 0.5 (Setengah bulan)
+
+2. PERHITUNGAN TOTAL BOBOT:
+   Total Bobot = (Jumlah Penghuni Aktif × 1) + (Jumlah Penghuni Tidak Aktif × 0.5)
+
+CONTOH KASUS:
+─────────────────────────────────────────────────────────────────────────
+
+Skenario: Total Tagihan Bulanan = Rp 400.000
+          Jumlah Penghuni = 3 orang
+          - 2 orang aktif (full 1 bulan)
+          - 1 orang tidak aktif (setengah bulan)
+
+Perhitungan:
+  Total Bobot = (2 × 1) + (1 × 0.5) = 2 + 0.5 = 2.5
+
+  Tagihan per Bobot = Rp 400.000 ÷ 2.5 = Rp 160.000
+
+  Tagihan Masing-Masing:
+  - Penghuni 1 (Aktif)      : Rp 160.000 × 1 = Rp 160.000 ✓
+  - Penghuni 2 (Aktif)      : Rp 160.000 × 1 = Rp 160.000 ✓
+  - Penghuni 3 (Tidak Aktif): Rp 160.000 × 0.5 = Rp 80.000 ✓
+
+  Total: Rp 160.000 + Rp 160.000 + Rp 80.000 = Rp 400.000 ✓
+
+─────────────────────────────────────────────────────────────────────────
+
+CONTOH KASUS LAINNYA:
+─────────────────────────────────────────────────────────────────────────
+
+Skenario: Total Tagihan = Rp 600.000
+          Jumlah Penghuni = 4 orang
+          - 3 orang aktif
+          - 1 orang tidak aktif
+
+Perhitungan:
+  Total Bobot = (3 × 1) + (1 × 0.5) = 3.5
+
+  Tagihan per Bobot = Rp 600.000 ÷ 3.5 ≈ Rp 171.428,57
+
+  Tagihan Masing-Masing:
+  - Penghuni 1 (Aktif)      : Rp 171.428,57 × 1 = Rp 171.428,57
+  - Penghuni 2 (Aktif)      : Rp 171.428,57 × 1 = Rp 171.428,57
+  - Penghuni 3 (Aktif)      : Rp 171.428,57 × 1 = Rp 171.428,57
+  - Penghuni 4 (Tidak Aktif): Rp 171.428,57 × 0.5 = Rp 85.714,28
+
+  Total: ≈ Rp 600.000
+
+─────────────────────────────────────────────────────────────────────────
+
+IMPLEMENTASI CODE (PHP):
+
+// Query untuk mendapatkan bobot penghuni
+$qAktif = mysqli_query($conn,"
+  SELECT COUNT(*) AS total
+  FROM penghuni
+  WHERE status_kamar='Aktif'
+");
+
+$aktif = mysqli_fetch_assoc($qAktif)['total'];
+
+$qTidakAktif = mysqli_query($conn,"
+  SELECT COUNT(*) AS total
+  FROM penghuni
+  WHERE status_kamar='Tidak Aktif'
+");
+
+$tidakAktif = mysqli_fetch_assoc($qTidakAktif)['total'];
+
+// Hitung total bobot
+$totalBobot = ($aktif * 1) + ($tidakAktif * 0.5);
+
+// Hitung tagihan per bobot
+$tagihanPerBobot = $totalTagihan / $totalBobot;
+
+// Untuk setiap penghuni, hitung tagihan mereka:
+// $tagihanPenghuni = $tagihanPerBobot * $bobotPenghuni;
+
+KEUNTUNGAN SISTEM INI:
+✓ Adil - Pembayaran proporsional dengan durasi tinggal
+✓ Fleksibel - Mudah menangani penghuni setengah bulan
+✓ Transparan - Mudah diaudit dan dihitung ulang
+✓ Scalable - Dapat diperluas untuk durasi lain (1/3 bulan, dst)
+
+================================================================================
+                            DATABASE SCHEMA
+================================================================================
+
+Tabel utama yang digunakan:
+- penghuni (id, nama, status_kamar, dll)
+- tagihan (id, bulan, tahun, nominal, dll)
+- pembayaran (id, id_penghuni, jumlah, tanggal, dll)
+
+Relasi:
+- penghuni → tagihan (one to many)
+- penghuni → pembayaran (one to many)
+
+================================================================================
+                         CATATAN PENGEMBANGAN
+================================================================================
+
+PRIORITAS DEVELOPMENT:
+1. Setup database dan tabel penghuni, tagihan, pembayaran
+2. Implementasi CRUD penghuni
+3. Implementasi system tagihan dengan bobot durasi
+4. Implementasi CRUD pembayaran
+5. Integration payment gateway
+6. Dashboard reporting
+7. Authentication & authorization
+8. Testing & debugging
+
+TODO:
+- [ ] Validasi input form
+- [ ] Error handling yang lebih baik
+- [ ] Paginasi untuk list data
+- [ ] Filter dan search functionality
+- [ ] Export laporan ke PDF/Excel
+- [ ] Email notification untuk tagihan baru
+- [ ] SMS notification untuk pembayaran
+- [ ] Admin panel untuk manage user
+- [ ] Audit trail untuk setiap transaksi
+
+================================================================================
+                              MAINTENANCE
+================================================================================
+
+BACKUP DATABASE:
+- Lakukan backup database secara berkala
+- Lokasi database: C:\xampp\mysql\data\simkos
+
+LOG FILES:
+- Apache logs: C:\xampp\apache\logs\
+- MySQL logs: C:\xampp\mysql\data\
+
+SECURITY:
+- Validasi semua input user
+- Gunakan prepared statements untuk query
+- Hash password dengan bcrypt
+- Implement CSRF protection
+- Sanitize output untuk prevent XSS
+
+================================================================================
+              KEKURANGAN DATABASE - PERLU PENAMBAHAN TABLE
+================================================================================
+
+⚠️ ISSUE: Database masih belum memiliki structure table yang lengkap untuk
+   menyimpan riwayat tagihan dan pembayaran dengan detail yang terperinci.
+
+PENAMBAHAN TABLE YANG DIPERLUKAN:
+
+─────────────────────────────────────────────────────────────────────────
+1. TABLE: tagihan
+─────────────────────────────────────────────────────────────────────────
+
+Purpose: Menyimpan data tagihan bulanan untuk setiap penghuni
+
+SQL CREATE:
+```sql
+CREATE TABLE tagihan (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  id_penghuni INT NOT NULL,
+  bulan INT NOT NULL,
+  tahun INT NOT NULL,
+  nominal_total DECIMAL(12,2) NOT NULL,
+  nominal_penghuni DECIMAL(12,2) NOT NULL,
+  status VARCHAR(50) DEFAULT 'Belum Bayar', -- 'Belum Bayar', 'Sebagian', 'Lunas'
+  bobot_penghuni DECIMAL(4,2) DEFAULT 1.0, -- 1 untuk full, 0.5 untuk setengah
+  tanggal_dibuat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  tanggal_jatuh_tempo DATE NOT NULL,
+  keterangan TEXT,
+  FOREIGN KEY (id_penghuni) REFERENCES penghuni(id),
+  UNIQUE KEY unique_tagihan (id_penghuni, bulan, tahun)
+);
+```
+
+Penjelasan Kolom:
+- id: Primary key
+- id_penghuni: Referensi ke tabel penghuni
+- bulan: Bulan tagihan (1-12)
+- tahun: Tahun tagihan
+- nominal_total: Total tagihan bulanan untuk semua penghuni
+- nominal_penghuni: Nominal yang harus dibayar penghuni ini
+- status: Status pembayaran tagihan
+- bobot_penghuni: 1.0 (full) atau 0.5 (setengah bulan)
+- tanggal_dibuat: Kapan tagihan dibuat
+- tanggal_jatuh_tempo: Batas waktu pembayaran
+- keterangan: Catatan tambahan
+
+─────────────────────────────────────────────────────────────────────────
+2. TABLE: pembayaran (Diperluas)
+─────────────────────────────────────────────────────────────────────────
+
+Purpose: Mencatat setiap pembayaran yang dilakukan penghuni
+
+SQL CREATE:
+```sql
+CREATE TABLE pembayaran (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  id_penghuni INT NOT NULL,
+  id_tagihan INT NOT NULL,
+  jumlah_bayar DECIMAL(12,2) NOT NULL,
+  metode_pembayaran VARCHAR(50), -- 'Tunai', 'Transfer', 'E-Wallet'
+  tanggal_pembayaran TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  bukti_pembayaran VARCHAR(255), -- Path untuk foto/file bukti
+  status VARCHAR(50) DEFAULT 'Verifikasi', -- 'Verifikasi', 'Diterima', 'Ditolak'
+  keterangan TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (id_penghuni) REFERENCES penghuni(id),
+  FOREIGN KEY (id_tagihan) REFERENCES tagihan(id)
+);
+```
+
+Penjelasan Kolom:
+- id: Primary key
+- id_penghuni: Referensi ke tabel penghuni
+- id_tagihan: Referensi ke tabel tagihan yang sedang dibayar
+- jumlah_bayar: Nominal uang yang dibayarkan
+- metode_pembayaran: Cara pembayaran
+- tanggal_pembayaran: Kapan pembayaran dilakukan
+- bukti_pembayaran: Dokumentasi pembayaran
+- status: Status verifikasi pembayaran
+- keterangan: Catatan tambahan
+
+─────────────────────────────────────────────────────────────────────────
+3. TABLE: penghuni (Perlu Ditambahkan Kolom)
+─────────────────────────────────────────────────────────────────────────
+
+Pastikan tabel penghuni sudah memiliki kolom-kolom berikut:
+
+```sql
+ALTER TABLE penghuni ADD COLUMN (
+  status_kamar VARCHAR(50) DEFAULT 'Aktif', -- 'Aktif' atau 'Tidak Aktif'
+  tanggal_masuk DATE,
+  tanggal_keluar DATE NULL,
+  nomor_kamar VARCHAR(10),
+  telepon VARCHAR(15),
+  email VARCHAR(100),
+  nama_emergency VARCHAR(100),
+  telepon_emergency VARCHAR(15)
+);
+```
+
+─────────────────────────────────────────────────────────────────────────
+4. TABLE: riwayat_tagihan (Audit Trail)
+─────────────────────────────────────────────────────────────────────────
+
+Purpose: Mencatat setiap perubahan/edit pada tagihan untuk audit
+
+SQL CREATE:
+```sql
+CREATE TABLE riwayat_tagihan (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  id_tagihan INT NOT NULL,
+  id_penghuni INT NOT NULL,
+  perubahan_dari TEXT,
+  perubahan_ke TEXT,
+  tipe_perubahan VARCHAR(50), -- 'Dibuat', 'Diubah', 'Dihapus', 'Status Diubah'
+  diubah_oleh VARCHAR(100),
+  tanggal_perubahan TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  keterangan TEXT,
+  FOREIGN KEY (id_tagihan) REFERENCES tagihan(id),
+  FOREIGN KEY (id_penghuni) REFERENCES penghuni(id)
+);
+```
+
+─────────────────────────────────────────────────────────────────────────
+5. TABLE: users (Untuk Admin System)
+─────────────────────────────────────────────────────────────────────────
+
+Purpose: Menyimpan data user/admin yang dapat login dan manage system
+
+SQL CREATE:
+```sql
+CREATE TABLE users (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(100) NOT NULL UNIQUE,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL, -- Hash password dengan bcrypt
+  nama_lengkap VARCHAR(100),
+  role VARCHAR(50) DEFAULT 'admin', -- 'admin', 'kasir', 'penghuni'
+  status VARCHAR(50) DEFAULT 'Aktif',
+  tanggal_dibuat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  terakhir_login TIMESTAMP NULL,
+  UNIQUE KEY unique_username (username)
+);
+```
+
+================================================================================
+                         SCRIPT SQL SETUP DATABASE
+================================================================================
+
+Jalankan semua query berikut untuk membuat struktur database yang lengkap:
+
+```sql
+-- 1. Create Database
+CREATE DATABASE IF NOT EXISTS simkos;
+USE simkos;
+
+-- 2. Create Table Penghuni
+CREATE TABLE penghuni (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  nama VARCHAR(100) NOT NULL,
+  status_kamar VARCHAR(50) DEFAULT 'Aktif',
+  nomor_kamar VARCHAR(10),
+  telepon VARCHAR(15),
+  email VARCHAR(100),
+  tanggal_masuk DATE,
+  tanggal_keluar DATE NULL,
+  nama_emergency VARCHAR(100),
+  telepon_emergency VARCHAR(15),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. Create Table Tagihan
+CREATE TABLE tagihan (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  id_penghuni INT NOT NULL,
+  bulan INT NOT NULL,
+  tahun INT NOT NULL,
+  nominal_total DECIMAL(12,2) NOT NULL,
+  nominal_penghuni DECIMAL(12,2) NOT NULL,
+  status VARCHAR(50) DEFAULT 'Belum Bayar',
+  bobot_penghuni DECIMAL(4,2) DEFAULT 1.0,
+  tanggal_dibuat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  tanggal_jatuh_tempo DATE NOT NULL,
+  keterangan TEXT,
+  FOREIGN KEY (id_penghuni) REFERENCES penghuni(id),
+  UNIQUE KEY unique_tagihan (id_penghuni, bulan, tahun)
+);
+
+-- 4. Create Table Pembayaran
+CREATE TABLE pembayaran (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  id_penghuni INT NOT NULL,
+  id_tagihan INT NOT NULL,
+  jumlah_bayar DECIMAL(12,2) NOT NULL,
+  metode_pembayaran VARCHAR(50),
+  tanggal_pembayaran TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  bukti_pembayaran VARCHAR(255),
+  status VARCHAR(50) DEFAULT 'Verifikasi',
+  keterangan TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (id_penghuni) REFERENCES penghuni(id),
+  FOREIGN KEY (id_tagihan) REFERENCES tagihan(id)
+);
+
+-- 5. Create Table Riwayat Tagihan
+CREATE TABLE riwayat_tagihan (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  id_tagihan INT NOT NULL,
+  id_penghuni INT NOT NULL,
+  perubahan_dari TEXT,
+  perubahan_ke TEXT,
+  tipe_perubahan VARCHAR(50),
+  diubah_oleh VARCHAR(100),
+  tanggal_perubahan TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  keterangan TEXT,
+  FOREIGN KEY (id_tagihan) REFERENCES tagihan(id),
+  FOREIGN KEY (id_penghuni) REFERENCES penghuni(id)
+);
+
+-- 6. Create Table Users
+CREATE TABLE users (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(100) NOT NULL UNIQUE,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  nama_lengkap VARCHAR(100),
+  role VARCHAR(50) DEFAULT 'admin',
+  status VARCHAR(50) DEFAULT 'Aktif',
+  tanggal_dibuat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  terakhir_login TIMESTAMP NULL,
+  UNIQUE KEY unique_username (username)
+);
+```
+
+LANGKAH IMPLEMENTASI:
+1. Buka phpMyAdmin di http://localhost/phpmyadmin
+2. Pilih database "simkos"
+3. Klik tab "SQL"
+4. Copy-paste semua query di atas
+5. Klik "Go" untuk menjalankan
+
+================================================================================
+                              CATATAN VERSI
+================================================================================
+
+Version: 1.0 (Development)
+Created: 2026-06-06
+Last Updated: 2026-06-06
+Update Note: Penambahan catatan database structure dan script SQL setup
+
+================================================================================
