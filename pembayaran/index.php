@@ -1,22 +1,62 @@
 <?php
 include '../config/koneksi.php';
 
+// =======================
+// STATISTIK PEMBAYARAN
+// =======================
+
+$totalPenghuni = mysqli_fetch_assoc(
+    mysqli_query($conn,"SELECT COUNT(*) total FROM penghuni")
+)['total'];
+
+$totalLunas = mysqli_fetch_assoc(
+    mysqli_query($conn,"
+        SELECT COUNT(*) total
+        FROM detail_tagihan
+        WHERE status_bayar='Lunas'
+    ")
+)['total'];
+
+$totalBelumLunas = mysqli_fetch_assoc(
+    mysqli_query($conn,"
+        SELECT COUNT(*) total
+        FROM detail_tagihan
+        WHERE status_bayar='Belum Bayar'
+    ")
+)['total'];
+
+$totalMenunggak = mysqli_fetch_assoc(
+    mysqli_query($conn,"
+        SELECT COUNT(*) total
+        FROM detail_tagihan
+        WHERE status_bayar='Sebagian'
+    ")
+)['total'];
+
+$totalTagihan = $totalLunas + $totalBelumLunas + $totalMenunggak;
+
+$persentase = 0;
+
+if($totalTagihan > 0){
+    $persentase = round(($totalLunas/$totalTagihan)*100);
+}
+
 $qPembayaran = mysqli_query($conn,"
 SELECT
-pb.*,
+dt.*,
 p.nama_lengkap,
 p.no_kamar,
 p.nik,
-p.no_hp,
-dt.nominal_tagihan
-FROM pembayaran pb
+p.no_hp
+FROM detail_tagihan dt
 JOIN penghuni p
-ON pb.penghuni_id = p.no
-JOIN detail_tagihan dt
-ON pb.detail_tagihan_id = dt.id
-ORDER BY pb.id DESC
+ON dt.penghuni_id = p.no
+ORDER BY dt.id DESC
 ");
 ?>
+
+
+
 
 <!DOCTYPE html>
 <html lang="id">
@@ -111,7 +151,7 @@ ORDER BY pb.id DESC
       </h2>
 
       <span class="text-sm text-green-600 font-medium">
-        80% Selesai
+      <?= $persentase ?>% Selesai
       </span>
 
     </div>
@@ -120,8 +160,7 @@ ORDER BY pb.id DESC
       rounded-full h-3 overflow-hidden">
 
       <div class="bg-green-500 h-full rounded-full"
-        style="width:80%">
-      </div>
+style="width:<?= $persentase ?>%"      </div>
 
     </div>
 
@@ -140,7 +179,7 @@ ORDER BY pb.id DESC
       </p>
 
       <h2 class="text-2xl font-bold text-blue-600 mt-3">
-        10 Orang
+      <?= $totalPenghuni ?> Orang      
       </h2>
 
     </div>
@@ -155,7 +194,7 @@ ORDER BY pb.id DESC
       </p>
 
       <h2 class="text-2xl font-bold text-green-600 mt-3">
-        7 Orang
+      <?= $totalLunas ?> Orang
       </h2>
 
     </div>
@@ -170,7 +209,7 @@ ORDER BY pb.id DESC
       </p>
 
       <h2 class="text-2xl font-bold text-yellow-500 mt-3">
-        2 Orang
+      <?= $totalBelumLunas ?> Orang
       </h2>
 
     </div>
@@ -185,7 +224,7 @@ ORDER BY pb.id DESC
       </p>
 
       <h2 class="text-2xl font-bold text-red-600 mt-3">
-        1 Orang
+      <?= $totalMenunggak ?> Orang
       </h2>
 
     </div>
@@ -200,19 +239,22 @@ ORDER BY pb.id DESC
     <div class="flex flex-col md:flex-row gap-4 justify-between">
 
       <!-- SEARCH -->
-      <input type="text"
-        placeholder="Cari penghuni..."
-        class="input md:w-1/3">
+      <input
+type="text"
+id="searchInput"
+placeholder="Cari penghuni..."
+class="input md:w-1/3">
 
-      <!-- FILTER STATUS -->
-      <select class="input md:w-52">
+<select
+id="statusFilter"
+class="input md:w-52">
 
-        <option>Semua Status</option>
-        <option>Lunas</option>
-        <option>Belum Lunas</option>
-        <option>Menunggak</option>
+<option value="">Semua Status</option>
+<option value="Lunas">Lunas</option>
+<option value="Belum Bayar">Belum Bayar</option>
+<option value="Sebagian">Menunggak</option>
 
-      </select>
+</select>
 
     </div>
 
@@ -252,20 +294,25 @@ ORDER BY pb.id DESC
             <th>No. Kamar</th>
             <th>NIK</th>
             <th>No. HP</th>
+            <th>Total Tagihan</th>
             <th>Status Pembayaran</th>
             <th>Aksi</th>
+
 
           </tr>
 
         </thead>
 
-        <tbody id="paymentTable">
+<tbody id="paymentTable">
 
 <?php while($row = mysqli_fetch_assoc($qPembayaran)): ?>
 
 <tr class="border-t border-gray-100 dark:border-[#222]
 hover:bg-gray-50 dark:hover:bg-[#1a1a1a]
-transition">
+transition"
+data-nama="<?= strtolower($row['nama_lengkap']) ?>"
+data-status="<?= $row['status_bayar'] ?>"
+>
 
     <td class="py-4 font-medium">
         <?= htmlspecialchars($row['nama_lengkap']) ?>
@@ -284,22 +331,26 @@ transition">
     </td>
 
     <td>
+        Rp <?= number_format($row['nominal_tagihan'],0,',','.') ?>
+    </td>
 
-        <?php if($row['status'] == 'Lunas'): ?>
+    <td>
+
+        <?php if($row['status_bayar'] == 'Lunas'): ?>
 
             <span class="px-3 py-1 rounded-full text-xs bg-green-100 text-green-600">
                 Lunas
             </span>
 
-        <?php elseif($row['status'] == 'Menunggak'): ?>
+        <?php elseif($row['status_bayar'] == 'Sebagian'): ?>
 
-            <span class="px-3 py-1 rounded-full text-xs bg-red-100 text-red-600">
-                Menunggak
+            <span class="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">
+                Sebagian
             </span>
 
         <?php else: ?>
 
-            <span class="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">
+            <span class="px-3 py-1 rounded-full text-xs bg-red-100 text-red-600">
                 Belum Bayar
             </span>
 
@@ -338,6 +389,8 @@ transition">
 <?php endwhile; ?>
 
 </tbody>
+
+
       </table>
 
     </div>
@@ -375,6 +428,36 @@ transition">
 }
 
 </style>
+<script>
 
+const searchInput = document.getElementById("searchInput");
+const statusFilter = document.getElementById("statusFilter");
+
+function filterTable(){
+
+    let keyword = searchInput.value.toLowerCase();
+    let status = statusFilter.value;
+
+    document.querySelectorAll("#paymentTable tr").forEach(row=>{
+
+        let nama = row.dataset.nama;
+        let statusRow = row.dataset.status;
+
+        let cocokNama = nama.includes(keyword);
+        let cocokStatus = status === "" || statusRow === status;
+
+        row.style.display =
+            (cocokNama && cocokStatus)
+            ? ""
+            : "none";
+
+    });
+
+}
+
+searchInput.addEventListener("keyup",filterTable);
+statusFilter.addEventListener("change",filterTable);
+
+</script>
 </body>
 </html>
