@@ -140,9 +140,7 @@ ORDER BY dt.id DESC
   </div>
 
   <!-- PROGRESS -->
-  <div class="bg-white dark:bg-[#111]
-    p-6 rounded-3xl shadow-xl mb-8
-    border border-gray-100 dark:border-[#1f1f1f]">
+  <div class="bg-white dark:bg-[#111] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-[#1f1f1f]">
 
     <div class="flex justify-between items-center mb-3">
 
@@ -167,7 +165,7 @@ style="width:<?= $persentase ?>%"      </div>
   </div>
 
   <!-- STATISTIK -->
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8 mb-8">
 
     <!-- CARD -->
     <div class="bg-white dark:bg-[#111]
