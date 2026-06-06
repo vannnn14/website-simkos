@@ -1,3 +1,4 @@
+
 <?php
 /**
  * SIMPAN TAGIHAN - API Endpoint
@@ -124,8 +125,10 @@ if ($totalBobot <= 0) {
     exit;
 }
 
-// Hitung tarif per bobot
-$tarifPerBobot = $total_tagihan / $totalBobot;
+// Hitung tarif per bobot (hanya untuk referensi, pembagian dilakukan per komponen)
+// Total penghuni (aktif + tidak aktif) untuk pembagian air/wifi/sampah
+$totalSemuaPenghuni = $jumlahAktif + $jumlahTidakAktif;
+$tarifPerBobot = $totalSemuaPenghuni > 0 ? $total_tagihan / $totalSemuaPenghuni : 0;
 
 // ───────────────────────────────────────────────────────────────────────────────
 // 4. PERSIAPAN DATA TAGIHAN
@@ -217,19 +220,21 @@ try {
         $bobot = ($p['status_kamar'] === 'Aktif') ? 1.0 : 0.5;
 
         // PERHITUNGAN BIAYA PER PENGHUNI:
-        // Listrik dibagi proporsional berdasarkan bobot (untuk semua penghuni)
-        $tListrik = ($biaya_listrik / $totalBobot) * $bobot;
-
-        // Air, Wifi, Sampah hanya untuk penghuni Aktif (full 1 bulan)
+        // Aturan:
+        //   - Penghuni Aktif (Full)   : bayar Listrik + Air + Wifi + Sampah
+        //   - Penghuni Setengah       : bayar Air + Wifi + Sampah saja (TIDAK bayar Listrik)
+        //   - Listrik hanya dibagi di antara penghuni Aktif (proporsional bobot)
+        //   - Air, Wifi, Sampah dibagi rata semua penghuni (Aktif + Setengah)
         if ($p['status_kamar'] === 'Aktif') {
-            $tAir    = $jumlahAktif > 0 ? $biaya_air    / $jumlahAktif : 0;
-            $tWifi   = $jumlahAktif > 0 ? $biaya_wifi   / $jumlahAktif : 0;
-            $tSampah = $jumlahAktif > 0 ? $biaya_sampah / $jumlahAktif : 0;
+            $tListrik = $jumlahAktif > 0 ? $biaya_listrik / $jumlahAktif : 0;
         } else {
-            $tAir    = 0;
-            $tWifi   = 0;
-            $tSampah = 0;
+            $tListrik = 0;
         }
+
+        // Air, Wifi, Sampah dibagi rata ke semua penghuni (Aktif + Setengah)
+        $tAir    = $totalSemuaPenghuni > 0 ? $biaya_air    / $totalSemuaPenghuni : 0;
+        $tWifi   = $totalSemuaPenghuni > 0 ? $biaya_wifi   / $totalSemuaPenghuni : 0;
+        $tSampah = $totalSemuaPenghuni > 0 ? $biaya_sampah / $totalSemuaPenghuni : 0;
 
         // Total nominal tagihan penghuni
         $nominal_penghuni = $tListrik + $tAir + $tWifi + $tSampah;
@@ -262,8 +267,9 @@ try {
     }
 
     // Validasi: total nominal detail harus mendekati total tagihan (dengan tolerance untuk pembulatan)
+    // Toleransi lebih besar karena ada pembagian Listrik hanya ke Aktif + Air/Wifi/Sampah ke semua
     $difference = abs($total_nominal_check - $total_tagihan);
-    if ($difference > 1) { // tolerance 1 rupiah untuk pembulatan
+    if ($difference > ($totalPenghuni + 1)) { // tolerance per penghuni untuk pembulatan
         throw new Exception(
             'Validasi jumlah tagihan gagal. Selisih: Rp' . number_format($difference, 2)
         );
@@ -279,27 +285,27 @@ try {
     // 6. RETURN SUCCESS RESPONSE
     // ─────────────────────────────────────────────────────────────────────────
 
-    http_response_code(201);
-    echo json_encode([
-        'success'         => true,
-        'message'         => 'Tagihan berhasil disimpan',
-        'tagihan_id'      => $tagihan_id,
-        'bulan'           => $bulan_text,
-        'tahun'           => $tahun,
-        'total_tagihan'   => floatval($total_tagihan),
-        'total_bobot'     => floatval($totalBobot),
-        'tarif_per_bobot' => floatval($tarifPerBobot),
-        'penghuni_aktif'  => intval($jumlahAktif),
-        'penghuni_tidak_aktif' => intval($jumlahTidakAktif),
-        'detail_count'    => intval($detail_count),
-        'biaya' => [
-            'listrik' => floatval($biaya_listrik),
-            'air'     => floatval($biaya_air),
-            'wifi'    => floatval($biaya_wifi),
-            'sampah'  => floatval($biaya_sampah)
-        ]
-    ]);
-
+   http_response_code(201);
+echo json_encode([
+    'success'         => true,
+    'message'         => 'Tagihan berhasil disimpan',
+    'tagihan_id'      => $tagihan_id,
+    'bulan'           => $bulan_text,
+    'tahun'           => $tahun,
+    'tenggat_pembayaran' => $tenggat, // <-- TAMBAHKAN INI
+    'total_tagihan'   => floatval($total_tagihan),
+    'total_bobot'     => floatval($totalBobot),
+    'tarif_per_bobot' => floatval($tarifPerBobot),
+    'penghuni_aktif'  => intval($jumlahAktif),
+    'penghuni_tidak_aktif' => intval($jumlahTidakAktif),
+    'detail_count'    => intval($detail_count),
+    'biaya' => [
+        'listrik' => floatval($biaya_listrik),
+        'air'     => floatval($biaya_air),
+        'wifi'    => floatval($biaya_wifi),
+        'sampah'  => floatval($biaya_sampah)
+    ]
+]);
 } catch (Exception $e) {
     // ─────────────────────────────────────────────────────────────────────────
     // ROLLBACK Jika Ada Error

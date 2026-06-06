@@ -9,6 +9,7 @@ $qTidakAktif = mysqli_query($conn, "SELECT COUNT(*) AS total FROM penghuni WHERE
 $tidakAktif  = mysqli_fetch_assoc($qTidakAktif)['total'];
 
 $totalBobot  = ($aktif * 1) + ($tidakAktif * 0.5);
+$totalSemuaPenghuni = $aktif + $tidakAktif;
 
 // ── Ambil riwayat tagihan dari DB ─────────────────────────────────────────────
 $qRiwayat = mysqli_query($conn, "
@@ -322,8 +323,9 @@ $qRiwayat = mysqli_query($conn, "
 
 <!-- SCRIPT -->
 <script>
-const totalBobot  = <?= $totalBobot ?>;
-const jumlahAktif = <?= $aktif ?>;
+const totalBobot        = <?= $totalBobot ?>;
+const jumlahAktif       = <?= $aktif ?>;
+const totalSemuaPenghuni = <?= $totalSemuaPenghuni ?>;
 
 const totalText  = document.getElementById('total');
 const perOrangText = document.getElementById('perOrang');
@@ -342,17 +344,19 @@ function hitungTotal() {
 
   totalText.innerText = formatRupiah(total);
 
-  if (totalBobot > 0) {
-    perOrangText.innerText = formatRupiah(total / totalBobot);
+    if (totalBobot > 0) {
+    perOrangText.innerText = formatRupiah(total / (totalSemuaPenghuni || 1));
 
     document.querySelectorAll('.penghuni-row').forEach(row => {
       const bobot  = parseFloat(row.dataset.bobot);
       const status = row.dataset.status;
 
-      const tListrik = (listrik / totalBobot) * bobot;
-      const tAir     = status === 'Aktif' && jumlahAktif > 0 ? air    / jumlahAktif : 0;
-      const tWifi    = status === 'Aktif' && jumlahAktif > 0 ? wifi   / jumlahAktif : 0;
-      const tSampah  = status === 'Aktif' && jumlahAktif > 0 ? sampah / jumlahAktif : 0;
+      // Aktif (Full): bayar Listrik + Air + Wifi + Sampah
+      // Setengah     : bayar Air + Wifi + Sampah saja (TIDAK bayar Listrik)
+      const tListrik = status === 'Aktif' && jumlahAktif > 0 ? listrik / jumlahAktif : 0;
+      const tAir     = totalSemuaPenghuni > 0 ? air    / totalSemuaPenghuni : 0;
+      const tWifi    = totalSemuaPenghuni > 0 ? wifi   / totalSemuaPenghuni : 0;
+      const tSampah  = totalSemuaPenghuni > 0 ? sampah / totalSemuaPenghuni : 0;
 
       const nominal = tListrik + tAir + tWifi + tSampah;
 
@@ -367,7 +371,6 @@ function hitungTotal() {
       row.querySelector('.nominal-tagihan').innerText = formatRupiah(nominal);
     });
   }
-}
 }
 
 document.querySelectorAll('#listrik,#air,#wifi,#sampah')
@@ -432,14 +435,18 @@ async function tambahTagihan() {
       const row = document.createElement('tr');
       row.className = 'border-t border-gray-100 dark:border-[#222] hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition';
       row.innerHTML = `
-        <td class="py-4 font-medium">${data.bulan}</td>
-        <td>Rp ${Math.round(data.total_tagihan).toLocaleString('id-ID')}</td>
-        <td>Rp ${Math.round(data.tarif_per_bobot).toLocaleString('id-ID')}</td>
-        <td>${jumlahPenghuni} orang</td>
-        <td>—</td>
-      `;
+  <td class="py-4 font-medium">${data.bulan}</td>
+  <td>Rp ${Math.round(data.total_tagihan).toLocaleString('id-ID')}</td>
+  <td>Rp ${Math.round(data.tarif_per_bobot).toLocaleString('id-ID')}</td>
+  <td>${jumlahPenghuni} orang</td>
+  <td>${new Date(data.tenggat_pembayaran).toLocaleDateString('id-ID', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  })}</td>
+`;
       tbody.prepend(row);
-      resetForm();
+      
 
     } else {
       showNotif('Gagal: ' + data.message, false);

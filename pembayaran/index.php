@@ -1,3 +1,23 @@
+<?php
+include '../config/koneksi.php';
+
+$qPembayaran = mysqli_query($conn,"
+SELECT
+pb.*,
+p.nama_lengkap,
+p.no_kamar,
+p.nik,
+p.no_hp,
+dt.nominal_tagihan
+FROM pembayaran pb
+JOIN penghuni p
+ON pb.penghuni_id = p.no
+JOIN detail_tagihan dt
+ON pb.detail_tagihan_id = dt.id
+ORDER BY pb.id DESC
+");
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -66,14 +86,14 @@
       </button>
 
       <!-- GENERATE -->
-      <button
-        class="px-5 py-3 rounded-2xl
-        bg-blue-600 text-white
-        hover:bg-blue-700 transition shadow-lg">
+                <a href="generate_pembayaran.php"
+          class="px-5 py-3 rounded-2xl
+          bg-blue-600 text-white
+          hover:bg-blue-700 transition shadow-lg">
 
-        + Generate Pembayaran
+          + Generate Pembayaran
 
-      </button>
+          </a>
 
     </div>
 
@@ -241,188 +261,83 @@
 
         <tbody id="paymentTable">
 
-          <!-- ROW -->
-          <tr class="border-t border-gray-100 dark:border-[#222]
-            hover:bg-gray-50 dark:hover:bg-[#1a1a1a]
-            transition">
+<?php while($row = mysqli_fetch_assoc($qPembayaran)): ?>
 
-            <td class="py-4 font-medium">
-              Ahmad Fauzi
-            </td>
+<tr class="border-t border-gray-100 dark:border-[#222]
+hover:bg-gray-50 dark:hover:bg-[#1a1a1a]
+transition">
 
-            <td>
-              A1
-            </td>
+    <td class="py-4 font-medium">
+        <?= htmlspecialchars($row['nama_lengkap']) ?>
+    </td>
 
-            <td>
-              3201012345678901
-            </td>
+    <td>
+        <?= $row['no_kamar'] ?>
+    </td>
 
-            <td>
-              081234567890
-            </td>
+    <td>
+        <?= $row['nik'] ?>
+    </td>
 
-            <td>
+    <td>
+        <?= $row['no_hp'] ?>
+    </td>
 
-              <span class="px-3 py-1 rounded-full text-xs
-                bg-green-100 text-green-600">
+    <td>
 
+        <?php if($row['status'] == 'Lunas'): ?>
+
+            <span class="px-3 py-1 rounded-full text-xs bg-green-100 text-green-600">
                 Lunas
+            </span>
 
-              </span>
+        <?php elseif($row['status'] == 'Menunggak'): ?>
 
-            </td>
-
-            <td>
-
-              <div class="flex gap-2">
-
-                <button
-                  class="px-3 py-2 rounded-xl
-                  bg-blue-100 text-blue-600 text-sm
-                  hover:opacity-80 transition">
-
-                  Detail
-
-                </button>
-
-                <button
-                  class="px-3 py-2 rounded-xl
-                  bg-green-100 text-green-600 text-sm
-                  hover:opacity-80 transition">
-
-                  WhatsApp
-
-                </button>
-
-              </div>
-
-            </td>
-
-          </tr>
-
-          <!-- ROW -->
-          <tr class="border-t border-gray-100 dark:border-[#222]
-            hover:bg-gray-50 dark:hover:bg-[#1a1a1a]
-            transition">
-
-            <td class="py-4 font-medium">
-              Siti Nurhaliza
-            </td>
-
-            <td>
-              A2
-            </td>
-
-            <td>
-              3201019876543210
-            </td>
-
-            <td>
-              085678901234
-            </td>
-
-            <td>
-
-              <span class="px-3 py-1 rounded-full text-xs
-                bg-yellow-100 text-yellow-700">
-
-                Belum Lunas
-
-              </span>
-
-            </td>
-
-            <td>
-
-              <div class="flex gap-2">
-
-                <button
-                  class="px-3 py-2 rounded-xl
-                  bg-blue-100 text-blue-600 text-sm
-                  hover:opacity-80 transition">
-
-                  Detail
-
-                </button>
-
-                <button
-                  class="px-3 py-2 rounded-xl
-                  bg-green-100 text-green-600 text-sm
-                  hover:opacity-80 transition">
-
-                  WhatsApp
-
-                </button>
-
-              </div>
-
-            </td>
-
-          </tr>
-
-          <!-- ROW -->
-          <tr class="border-t border-gray-100 dark:border-[#222]
-            hover:bg-gray-50 dark:hover:bg-[#1a1a1a]
-            transition">
-
-            <td class="py-4 font-medium">
-              Rizky Maulana
-            </td>
-
-            <td>
-              B1
-            </td>
-
-            <td>
-              3201011122334455
-            </td>
-
-            <td>
-              081122334455
-            </td>
-
-            <td>
-
-              <span class="px-3 py-1 rounded-full text-xs
-                bg-red-100 text-red-600">
-
+            <span class="px-3 py-1 rounded-full text-xs bg-red-100 text-red-600">
                 Menunggak
+            </span>
 
-              </span>
+        <?php else: ?>
 
-            </td>
+            <span class="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">
+                Belum Bayar
+            </span>
 
-            <td>
+        <?php endif; ?>
 
-              <div class="flex gap-2">
+    </td>
 
-                <button
-                  class="px-3 py-2 rounded-xl
-                  bg-blue-100 text-blue-600 text-sm
-                  hover:opacity-80 transition">
+    <td>
 
-                  Detail
+        <div class="flex gap-2">
 
-                </button>
+            <button
+            class="px-3 py-2 rounded-xl
+            bg-blue-100 text-blue-600 text-sm
+            hover:opacity-80 transition">
 
-                <button
-                  class="px-3 py-2 rounded-xl
-                  bg-green-100 text-green-600 text-sm
-                  hover:opacity-80 transition">
+                Detail
 
-                  WhatsApp
+            </button>
 
-                </button>
+            <button
+            class="px-3 py-2 rounded-xl
+            bg-green-100 text-green-600 text-sm
+            hover:opacity-80 transition">
 
-              </div>
+                WhatsApp
 
-            </td>
+            </button>
 
-          </tr>
+        </div>
 
-        </tbody>
+    </td>
 
+</tr>
+
+<?php endwhile; ?>
+
+</tbody>
       </table>
 
     </div>
