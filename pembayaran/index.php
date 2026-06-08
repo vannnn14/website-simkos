@@ -207,7 +207,7 @@ style="width:<?= $persentase ?>%"      </div>
       </p>
 
       <h2 class="text-2xl font-bold text-yellow-500 mt-3">
-      <?= $totalBelumLunas ?> Orang
+      <?= $totalBelumLunas ?> Tagihan
       </h2>
 
     </div>
@@ -310,6 +310,8 @@ hover:bg-gray-50 dark:hover:bg-[#1a1a1a]
 transition"
 data-nama="<?= strtolower($row['nama_lengkap']) ?>"
 data-status="<?= $row['status_bayar'] ?>"
+data-id="<?= $row['id'] ?>"
+data-penghuni-id="<?= $row['penghuni_id'] ?>"
 >
 
     <td class="py-4 font-medium">
@@ -360,23 +362,25 @@ data-status="<?= $row['status_bayar'] ?>"
 
         <div class="flex gap-2">
 
+            <?php if ($row['status_bayar'] !== 'Lunas'): ?>
             <button
-            class="px-3 py-2 rounded-xl
-            bg-blue-100 text-blue-600 text-sm
-            hover:opacity-80 transition">
-
-                Detail
-
+            onclick="updateStatus(this, 'Lunas')"
+            class="btn-status px-3 py-2 rounded-xl
+            bg-green-100 text-green-700 text-sm font-medium
+            hover:bg-green-200 transition">
+                ✓ Tandai Lunas
             </button>
+            <?php endif; ?>
 
+            <?php if ($row['status_bayar'] === 'Lunas'): ?>
             <button
-            class="px-3 py-2 rounded-xl
-            bg-green-100 text-green-600 text-sm
-            hover:opacity-80 transition">
-
-                WhatsApp
-
+            onclick="updateStatus(this, 'Belum Bayar')"
+            class="btn-status px-3 py-2 rounded-xl
+            bg-gray-100 text-gray-600 text-sm font-medium
+            hover:bg-gray-200 transition">
+                ↩ Batal Lunas
             </button>
+            <?php endif; ?>
 
         </div>
 
@@ -395,6 +399,13 @@ data-status="<?= $row['status_bayar'] ?>"
 
   </div>
 
+</div>
+
+<!-- NOTIF GLOBAL -->
+<div id="globalNotif"
+  class="hidden fixed bottom-6 right-6 z-50
+  px-5 py-3 rounded-2xl shadow-xl text-sm font-medium
+  transition-all duration-300">
 </div>
 
 <!-- STYLE -->
@@ -453,8 +464,82 @@ function filterTable(){
 
 }
 
-searchInput.addEventListener("keyup",filterTable);
-statusFilter.addEventListener("change",filterTable);
+searchInput.addEventListener("keyup", filterTable);
+statusFilter.addEventListener("change", filterTable);
+
+// ── Update status pembayaran ─────────────────────────────────────────────────
+async function updateStatus(btn, statusBaru) {
+  const tr         = btn.closest('tr');
+  const detailId   = tr.dataset.id;
+  const penghuniId = tr.dataset.penghuniId;
+
+  btn.disabled  = true;
+  btn.innerText = 'Menyimpan...';
+
+  try {
+    const res  = await fetch('update_status.php', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        detail_id:   detailId,
+        penghuni_id: penghuniId,
+        status:      statusBaru
+      })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      // ── Perbarui badge status ──────────────────────────────────────────────
+      const badgeTd = tr.querySelector('td:nth-child(6)');
+      if (statusBaru === 'Lunas') {
+        badgeTd.innerHTML = '<span class="px-3 py-1 rounded-full text-xs bg-green-100 text-green-600">Lunas</span>';
+      } else if (statusBaru === 'Sebagian') {
+        badgeTd.innerHTML = '<span class="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">Sebagian</span>';
+      } else {
+        badgeTd.innerHTML = '<span class="px-3 py-1 rounded-full text-xs bg-red-100 text-red-600">Belum Bayar</span>';
+      }
+
+      // ── Perbarui tombol aksi ───────────────────────────────────────────────
+      tr.dataset.status = statusBaru;
+      const aksDiv = tr.querySelector('td:last-child div');
+      if (statusBaru === 'Lunas') {
+        aksDiv.innerHTML = `<button onclick="updateStatus(this,'Belum Bayar')"
+          class="btn-status px-3 py-2 rounded-xl bg-gray-100 text-gray-600 text-sm font-medium hover:bg-gray-200 transition">
+          ↩ Batal Lunas</button>`;
+      } else {
+        aksDiv.innerHTML = `<button onclick="updateStatus(this,'Lunas')"
+          class="btn-status px-3 py-2 rounded-xl bg-green-100 text-green-700 text-sm font-medium hover:bg-green-200 transition">
+          ✓ Tandai Lunas</button>`;
+      }
+
+      showGlobalNotif(
+        statusBaru === 'Lunas'
+          ? '✅ Pembayaran ditandai Lunas! Status penghuni: ' + data.status_penghuni
+          : '↩ Status dikembalikan ke ' + statusBaru,
+        true
+      );
+    } else {
+      btn.disabled  = false;
+      btn.innerText = statusBaru === 'Lunas' ? '✓ Tandai Lunas' : '↩ Batal Lunas';
+      showGlobalNotif('Gagal: ' + data.message, false);
+    }
+  } catch (e) {
+    btn.disabled  = false;
+    btn.innerText = statusBaru === 'Lunas' ? '✓ Tandai Lunas' : '↩ Batal Lunas';
+    showGlobalNotif('Terjadi kesalahan koneksi.', false);
+    console.error(e);
+  }
+}
+
+function showGlobalNotif(msg, sukses) {
+  const el = document.getElementById('globalNotif');
+  el.className = `fixed bottom-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-xl text-sm font-medium transition-all duration-300
+    ${ sukses ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }`;
+  el.innerText = msg;
+  el.classList.remove('hidden');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.add('hidden'), 4000);
+}
 
 </script>
 </body>

@@ -66,19 +66,58 @@ $qRiwayat = mysqli_query($conn, "
       <input type="number" id="wifi"    placeholder="Biaya Wifi"    class="input" min="0">
       <input type="number" id="sampah"  placeholder="Biaya Sampah"  class="input" min="0">
 
+    </div>
+
+    <!-- PERIODE & TENGGAT MANUAL -->
+    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+
+      <div>
+        <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Bulan Tagihan</label>
+        <?php
+          $bulanList = [
+            1=>'January', 2=>'February', 3=>'March', 4=>'April',
+            5=>'May', 6=>'June', 7=>'July', 8=>'August',
+            9=>'September', 10=>'October', 11=>'November', 12=>'December'
+          ];
+          $bulanLabel = [
+            1=>'Januari', 2=>'Februari', 3=>'Maret', 4=>'April',
+            5=>'Mei', 6=>'Juni', 7=>'Juli', 8=>'Agustus',
+            9=>'September', 10=>'Oktober', 11=>'November', 12=>'Desember'
+          ];
+          $bulanSekarang = intval(date('n'));
+        ?>
+        <select id="bulanTagihan" class="input">
+          <?php foreach ($bulanList as $no => $eng): ?>
+            <option value="<?= $eng ?>" <?= $no === $bulanSekarang ? 'selected' : '' ?>>
+              <?= $bulanLabel[$no] ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+
+      <div>
+        <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Tahun Tagihan</label>
+        <input type="number" id="tahunTagihan" class="input" value="<?= date('Y') ?>" min="2020" max="2099" placeholder="Tahun">
+      </div>
+
+      <div>
+        <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Tenggat Pembayaran</label>
+        <input type="date" id="tenggatTagihan" class="input" value="<?= date('Y-m-t') ?>">
+      </div>
+
+    </div>
+
+    <div class="mt-3">
       <input type="text"
         value="Aktif: <?= $aktif ?> | Tidak Aktif: <?= $tidakAktif ?>"
         readonly
-        class="input bg-gray-200 cursor-not-allowed">
-
+        class="input bg-gray-200 cursor-not-allowed w-full md:w-auto inline-block" style="width:auto;min-width:220px">
     </div>
 
     <!-- TOTAL -->
     <div class="mt-6 bg-blue-50 dark:bg-[#0b2239] p-6 rounded-2xl">
       <p class="text-sm text-gray-500 dark:text-gray-400">Total Tagihan</p>
       <h2 id="total" class="text-2xl font-bold text-blue-600 mt-2">Rp 0</h2>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mt-4">Tarif per Bobot</p>
-      <h3 id="perOrang" class="text-xl font-semibold text-green-600 mt-1">Rp 0</h3>
     </div>
 
     <!-- NOTIFIKASI -->
@@ -109,7 +148,6 @@ $qRiwayat = mysqli_query($conn, "
           <tr class="text-gray-500 dark:text-gray-400 text-sm">
             <th class="py-3">Bulan</th>
             <th>Total Tagihan</th>
-            <th>Tarif/Bobot</th>
             <th>Penghuni</th>
             <th>Tenggat</th>
           </tr>
@@ -119,7 +157,7 @@ $qRiwayat = mysqli_query($conn, "
           <?php if (mysqli_num_rows($qRiwayat) === 0): ?>
 
           <tr>
-            <td colspan="5" class="py-6 text-center text-gray-400">
+            <td colspan="4" class="py-6 text-center text-gray-400">
               Belum ada tagihan tercatat.
             </td>
           </tr>
@@ -135,10 +173,6 @@ $qRiwayat = mysqli_query($conn, "
 
             <td>
               Rp <?= number_format($t['total_tagihan'], 0, ',', '.') ?>
-            </td>
-
-            <td>
-              Rp <?= number_format($t['tarif_per_bobot'], 0, ',', '.') ?>
             </td>
 
             <td>
@@ -160,162 +194,184 @@ $qRiwayat = mysqli_query($conn, "
 
   </div>
 
-  <!-- PEMBAGIAN PER PENGHUNI -->
+  <!-- PEMBAGIAN PER PENGHUNI - SEMUA RIWAYAT -->
   <div class="bg-white dark:bg-[#111] p-6 rounded-3xl shadow-xl border border-gray-100 dark:border-[#1f1f1f]">
 
     <div class="mb-6">
       <h2 class="text-xl font-semibold">Pembagian Penghuni</h2>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-        <?php 
-          // Ambil tagihan terbaru untuk preview
-          $qTagihanTerbaru = mysqli_query($conn, "
-            SELECT * FROM tagihan_utilitas 
-            ORDER BY tahun DESC, FIELD(bulan, 'January','February','March','April','May','June','July','August','September','October','November','December') DESC 
-            LIMIT 1
-          ");
-          $tagihanTerbaru = mysqli_fetch_assoc($qTagihanTerbaru);
-          
-          if ($tagihanTerbaru) {
-            echo "Pembagian untuk " . $tagihanTerbaru['bulan'] . " " . $tagihanTerbaru['tahun'];
-          } else {
-            echo "Simulasi pembagian tagihan tiap penghuni";
-          }
-        ?>
-      </p>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Rincian tagihan per penghuni untuk setiap periode</p>
     </div>
 
-    <div class="overflow-x-auto">
-      <table class="w-full text-left">
-        <thead>
-          <tr class="text-gray-500 dark:text-gray-400 text-sm">
-            <th class="pb-4">Nama</th>
-            <th>Kamar</th>
-            <th>Status Tinggal</th>
-            <th>Bobot</th>
-            <th>Listrik</th>
-            <th>Air</th>
-            <th>Wifi</th>
-            <th>Sampah</th>
-            <th class="text-right">Total Tagihan</th>
-          </tr>
-        </thead>
-        <tbody id="listPembagian">
+    <?php
+    // Ambil SEMUA tagihan diurutkan terbaru dulu
+    $qSemuaTagihan = mysqli_query($conn, "
+      SELECT * FROM tagihan_utilitas
+      ORDER BY tahun DESC, FIELD(bulan,
+        'January','February','March','April','May','June',
+        'July','August','September','October','November','December') DESC
+    ");
 
-          <?php
-          // Ambil semua penghuni
-          $queryPenghuni = mysqli_query($conn, "SELECT * FROM penghuni ORDER BY status_kamar DESC, nama_lengkap ASC");
-          
-          if ($tagihanTerbaru) {
-            // Jika ada tagihan terbaru, tampilkan pembagian dari database
-            $tagihan_id = $tagihanTerbaru['id'];
-            $biaya_listrik = floatval($tagihanTerbaru['biaya_listrik']);
-            $biaya_air = floatval($tagihanTerbaru['biaya_air']);
-            $biaya_wifi = floatval($tagihanTerbaru['biaya_wifi']);
-            $biaya_sampah = floatval($tagihanTerbaru['biaya_sampah']);
-            $total_bobot = floatval($tagihanTerbaru['total_bobot']);
-            
-            $qDetail = mysqli_query($conn, "
-              SELECT dt.*, p.no_kamar 
-              FROM detail_tagihan dt 
-              JOIN penghuni p ON dt.penghuni_id = p.no 
-              WHERE dt.tagihan_id = $tagihan_id
-              ORDER BY p.status_kamar DESC, p.nama_lengkap ASC
-            ");
-            
-            while ($detail = mysqli_fetch_assoc($qDetail)):
-              $bobot = floatval($detail['bobot']);
-              $tListrik = floatval($detail['tagihan_listrik']);
-              $tAir = floatval($detail['tagihan_air']);
-              $tWifi = floatval($detail['tagihan_wifi']);
-              $tSampah = floatval($detail['tagihan_sampah']);
-              $nominal = floatval($detail['nominal_tagihan']);
-              
-              $pDetail = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM penghuni WHERE no = {$detail['penghuni_id']}"));
-              $status_label = $pDetail['status_kamar'] === 'Aktif' ? 'Aktif (Full)' : 'Tidak Aktif (Setengah)';
-          ?>
+    $bulanLabel = [
+      'January'=>'Januari','February'=>'Februari','March'=>'Maret',
+      'April'=>'April','May'=>'Mei','June'=>'Juni','July'=>'Juli',
+      'August'=>'Agustus','September'=>'September','October'=>'Oktober',
+      'November'=>'November','December'=>'Desember'
+    ];
 
-          <tr class="penghuni-row border-t border-gray-100 dark:border-[#222] hover:bg-gray-50 dark:hover:bg-[#1a1a1a]"
-              data-status="<?= $pDetail['status_kamar'] ?>"
-              data-bobot="<?= $bobot ?>">
-
-            <td class="py-4"><?= htmlspecialchars($pDetail['nama_lengkap']) ?></td>
-
-            <td><?= $pDetail['no_kamar'] ?></td>
-
-            <td>
-              <?php if ($pDetail['status_kamar'] === 'Aktif'): ?>
-                <span class="px-3 py-1 rounded-full text-xs bg-green-100 text-green-600 font-semibold">Aktif (Full)</span>
-              <?php else: ?>
-                <span class="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-600 font-semibold">Setengah</span>
-              <?php endif; ?>
-            </td>
-
-            <td class="font-semibold"><?= $bobot ?>x</td>
-
-            <td>Rp <?= number_format($tListrik, 0, ',', '.') ?></td>
-            <td>Rp <?= number_format($tAir, 0, ',', '.') ?></td>
-            <td>Rp <?= number_format($tWifi, 0, ',', '.') ?></td>
-            <td>Rp <?= number_format($tSampah, 0, ',', '.') ?></td>
-
-            <td class="font-bold text-right text-blue-600">Rp <?= number_format($nominal, 0, ',', '.') ?></td>
-
-          </tr>
-
-          <?php 
-            endwhile;
-          } else {
-            // Jika belum ada tagihan, tampilkan simulasi saja
-            while ($p = mysqli_fetch_assoc($queryPenghuni)):
-              $bobot = ($p['status_kamar'] === 'Aktif') ? 1 : 0.5;
-          ?>
-
-          <tr class="penghuni-row border-t border-gray-100 dark:border-[#222]"
-              data-status="<?= $p['status_kamar'] ?>"
-              data-bobot="<?= $bobot ?>">
-
-            <td class="py-4"><?= htmlspecialchars($p['nama_lengkap']) ?></td>
-
-            <td><?= $p['no_kamar'] ?></td>
-
-            <td>
-              <?php if ($p['status_kamar'] === 'Aktif'): ?>
-                <span class="px-3 py-1 rounded-full text-xs bg-green-100 text-green-600 font-semibold">Aktif (Full)</span>
-              <?php else: ?>
-                <span class="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-600 font-semibold">Setengah</span>
-              <?php endif; ?>
-            </td>
-
-            <td class="font-semibold"><?= $bobot ?>x</td>
-
-            <td class="nominal-listrik">Rp 0</td>
-            <td class="nominal-air">Rp 0</td>
-            <td class="nominal-wifi">Rp 0</td>
-            <td class="nominal-sampah">Rp 0</td>
-
-            <td class="font-bold text-right text-blue-600 nominal-tagihan">Rp 0</td>
-
-          </tr>
-
-          <?php endwhile;
-          }
-          ?>
-
-        </tbody>
-      </table>
-    </div>
-
-    <?php if ($tagihanTerbaru): ?>
-    <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900 rounded-lg border border-blue-200 dark:border-blue-700">
-      <div class="text-sm">
-        <p class="font-semibold text-blue-900 dark:text-blue-100">📊 Ringkasan:</p>
-        <p class="text-blue-800 dark:text-blue-200 mt-2">
-          Total Tagihan: <strong>Rp <?= number_format(floatval($tagihanTerbaru['total_tagihan']), 0, ',', '.') ?></strong> | 
-          Total Bobot: <strong><?= floatval($tagihanTerbaru['total_bobot']) ?></strong> | 
-          Tarif/Bobot: <strong>Rp <?= number_format(floatval($tagihanTerbaru['tarif_per_bobot']), 0, ',', '.') ?></strong>
-        </p>
+    if (mysqli_num_rows($qSemuaTagihan) === 0):
+      // Belum ada tagihan — tampilkan simulasi dari penghuni aktif
+      $queryPenghuni = mysqli_query($conn, "SELECT * FROM penghuni ORDER BY status_kamar DESC, nama_lengkap ASC");
+    ?>
+      <div class="border border-gray-100 dark:border-[#222] rounded-2xl overflow-hidden">
+        <div class="bg-gray-50 dark:bg-[#1a1a1a] px-5 py-4 flex items-center gap-3">
+          <span class="text-sm font-semibold text-gray-500">Simulasi Pembagian (Belum ada tagihan)</span>
+        </div>
+        <div class="overflow-x-auto p-4">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="text-gray-500 dark:text-gray-400">
+                <th class="pb-3">Nama</th><th>Kamar</th><th>Status</th>
+                <th>Listrik</th><th>Air</th><th>Wifi</th><th>Sampah</th>
+                <th class="text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php while ($p = mysqli_fetch_assoc($queryPenghuni)):
+                $bobot = ($p['status_kamar'] === 'Aktif') ? 1 : 0.5;
+              ?>
+              <tr class="penghuni-row border-t border-gray-100 dark:border-[#222]"
+                  data-status="<?= $p['status_kamar'] ?>"
+                  data-bobot="<?= $bobot ?>">
+                <td class="py-3 font-medium"><?= htmlspecialchars($p['nama_lengkap']) ?></td>
+                <td><?= $p['no_kamar'] ?></td>
+                <td>
+                  <?php if ($p['status_kamar'] === 'Aktif'): ?>
+                    <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-600 font-semibold">Aktif</span>
+                  <?php else: ?>
+                    <span class="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-600 font-semibold">Setengah</span>
+                  <?php endif; ?>
+                </td>
+                <td class="nominal-listrik text-gray-400">—</td>
+                <td class="nominal-air text-gray-400">—</td>
+                <td class="nominal-wifi text-gray-400">—</td>
+                <td class="nominal-sampah text-gray-400">—</td>
+                <td class="font-bold text-right text-blue-600 nominal-tagihan">—</td>
+              </tr>
+              <?php endwhile; ?>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-    <?php endif; ?>
+
+    <?php
+    else:
+      $isFirst = true;
+      while ($tgh = mysqli_fetch_assoc($qSemuaTagihan)):
+        $tId      = $tgh['id'];
+        $tBulan   = $bulanLabel[$tgh['bulan']] ?? $tgh['bulan'];
+        $tTahun   = $tgh['tahun'];
+        $tTotal   = floatval($tgh['total_tagihan']);
+        $tTenggat = date('d M Y', strtotime($tgh['tenggat_pembayaran']));
+        $panelId  = 'panel-' . $tId;
+
+        // Ambil detail penghuni untuk tagihan ini
+        $qDet = mysqli_query($conn, "
+          SELECT dt.*, p.nama_lengkap, p.no_kamar, p.status_kamar
+          FROM detail_tagihan dt
+          JOIN penghuni p ON dt.penghuni_id = p.no
+          WHERE dt.tagihan_id = $tId
+          ORDER BY p.status_kamar DESC, p.nama_lengkap ASC
+        ");
+    ?>
+
+    <!-- ACCORDION ITEM -->
+    <div class="border border-gray-100 dark:border-[#222] rounded-2xl overflow-hidden mb-3">
+
+      <!-- HEADER (klik untuk toggle) -->
+      <button type="button"
+        onclick="togglePanel('<?= $panelId ?>')"
+        class="w-full flex items-center justify-between px-5 py-4 bg-gray-50 dark:bg-[#1a1a1a] hover:bg-gray-100 dark:hover:bg-[#222] transition text-left">
+
+        <div class="flex items-center gap-3">
+          <span class="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 flex items-center justify-center text-sm font-bold">
+            <?= substr($tgh['bulan'], 0, 3) ?>
+          </span>
+          <div>
+            <p class="font-semibold text-sm"><?= $tBulan . ' ' . $tTahun ?></p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              Total: <strong>Rp <?= number_format($tTotal, 0, ',', '.') ?></strong>
+              &nbsp;·&nbsp; <?= $tgh['total_penghuni'] ?> orang
+              &nbsp;·&nbsp; Tenggat: <?= $tTenggat ?>
+            </p>
+          </div>
+        </div>
+
+        <svg id="icon-<?= $panelId ?>"
+          class="w-5 h-5 text-gray-400 transition-transform duration-200 <?= $isFirst ? 'rotate-180' : '' ?>"
+          fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </button>
+
+      <!-- CONTENT -->
+      <div id="<?= $panelId ?>" class="<?= $isFirst ? '' : 'hidden' ?> overflow-x-auto">
+        <?php if (!$qDet || mysqli_num_rows($qDet) === 0): ?>
+          <p class="px-5 py-4 text-sm text-gray-400">Tidak ada data detail penghuni untuk periode ini.</p>
+        <?php else: ?>
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="text-gray-500 dark:text-gray-400 text-xs bg-gray-50 dark:bg-[#0d0d0d]">
+              <th class="px-5 py-3">Nama</th>
+              <th class="py-3">Kamar</th>
+              <th class="py-3">Status</th>
+              <th class="py-3">Listrik</th>
+              <th class="py-3">Air</th>
+              <th class="py-3">Wifi</th>
+              <th class="py-3">Sampah</th>
+              <th class="py-3 text-right pr-5">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php while ($det = mysqli_fetch_assoc($qDet)): ?>
+            <tr class="border-t border-gray-100 dark:border-[#1a1a1a] hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition">
+              <td class="px-5 py-3 font-medium"><?= htmlspecialchars($det['nama_lengkap']) ?></td>
+              <td class="py-3"><?= $det['no_kamar'] ?></td>
+              <td class="py-3">
+                <?php if ($det['status_kamar'] === 'Aktif'): ?>
+                  <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-600 font-semibold">Aktif</span>
+                <?php else: ?>
+                  <span class="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-600 font-semibold">Setengah</span>
+                <?php endif; ?>
+              </td>
+              <td class="py-3">Rp <?= number_format(floatval($det['tagihan_listrik']), 0, ',', '.') ?></td>
+              <td class="py-3">Rp <?= number_format(floatval($det['tagihan_air']),     0, ',', '.') ?></td>
+              <td class="py-3">Rp <?= number_format(floatval($det['tagihan_wifi']),    0, ',', '.') ?></td>
+              <td class="py-3">Rp <?= number_format(floatval($det['tagihan_sampah']),  0, ',', '.') ?></td>
+              <td class="py-3 font-bold text-right text-blue-600 pr-5">
+                Rp <?= number_format(floatval($det['nominal_tagihan']), 0, ',', '.') ?>
+              </td>
+            </tr>
+            <?php endwhile; ?>
+          </tbody>
+          <tfoot>
+            <tr class="border-t-2 border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#0d0d0d]">
+              <td colspan="7" class="px-5 py-3 text-sm font-semibold text-gray-600 dark:text-gray-300">Total Tagihan Bulan Ini</td>
+              <td class="py-3 font-bold text-right text-blue-600 pr-5">
+                Rp <?= number_format($tTotal, 0, ',', '.') ?>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+        <?php endif; ?>
+      </div>
+
+    </div><!-- end accordion item -->
+
+    <?php
+        $isFirst = false;
+      endwhile;
+    endif;
+    ?>
 
   </div>
 
@@ -326,13 +382,22 @@ $qRiwayat = mysqli_query($conn, "
 const totalBobot        = <?= $totalBobot ?>;
 const jumlahAktif       = <?= $aktif ?>;
 const totalSemuaPenghuni = <?= $totalSemuaPenghuni ?>;
+const jumlahPenghuniDB  = <?= $totalSemuaPenghuni ?>; // dari PHP, selalu akurat
 
 const totalText  = document.getElementById('total');
-const perOrangText = document.getElementById('perOrang');
 const notif      = document.getElementById('notif');
 
 function formatRupiah(angka) {
   return 'Rp ' + Math.round(angka).toLocaleString('id-ID');
+}
+
+// ── Accordion toggle ─────────────────────────────────────────────────────────
+function togglePanel(id) {
+  const panel = document.getElementById(id);
+  const icon  = document.getElementById('icon-' + id);
+  const isHidden = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !isHidden);
+  icon.classList.toggle('rotate-180', isHidden);
 }
 
 function hitungTotal() {
@@ -344,9 +409,7 @@ function hitungTotal() {
 
   totalText.innerText = formatRupiah(total);
 
-    if (totalBobot > 0) {
-    perOrangText.innerText = formatRupiah(total / (totalSemuaPenghuni || 1));
-
+  if (totalBobot > 0) {
     document.querySelectorAll('.penghuni-row').forEach(row => {
       const bobot  = parseFloat(row.dataset.bobot);
       const status = row.dataset.status;
@@ -367,8 +430,10 @@ function hitungTotal() {
         row.querySelector('.nominal-wifi').innerText = formatRupiah(tWifi);
         row.querySelector('.nominal-sampah').innerText = formatRupiah(tSampah);
       }
-      
-      row.querySelector('.nominal-tagihan').innerText = formatRupiah(nominal);
+
+      if (row.querySelector('.nominal-tagihan')) {
+        row.querySelector('.nominal-tagihan').innerText = formatRupiah(nominal);
+      }
     });
   }
 }
@@ -379,9 +444,10 @@ document.querySelectorAll('#listrik,#air,#wifi,#sampah')
 function resetForm() {
   document.querySelectorAll('#listrik,#air,#wifi,#sampah')
     .forEach(i => i.value = '');
-  totalText.innerText   = 'Rp 0';
-  perOrangText.innerText = 'Rp 0';
+  totalText.innerText = 'Rp 0';
   document.querySelectorAll('.nominal-tagihan')
+    .forEach(el => el.innerText = 'Rp 0');
+  document.querySelectorAll('.nominal-listrik,.nominal-air,.nominal-wifi,.nominal-sampah')
     .forEach(el => el.innerText = 'Rp 0');
 }
 
@@ -400,14 +466,15 @@ async function tambahTagihan() {
   const sampah  = Number(document.getElementById('sampah').value)  || 0;
   const total   = listrik + air + wifi + sampah;
 
-  const jumlahPenghuni = document.querySelectorAll('.penghuni-row').length;
+  // Gunakan data penghuni dari PHP agar tidak bergantung pada DOM yang mungkin kosong
+  const jumlahPenghuni = jumlahPenghuniDB;
 
   if (total === 0) {
     showNotif('Isi minimal satu biaya utilitas!', false);
     return;
   }
   if (jumlahPenghuni === 0) {
-    showNotif('Tidak ada penghuni terdaftar!', false);
+    showNotif('Tidak ada penghuni terdaftar di database!', false);
     return;
   }
 
@@ -415,38 +482,48 @@ async function tambahTagihan() {
   btn.disabled   = true;
   btn.innerText  = 'Menyimpan...';
 
+  const bulan   = document.getElementById('bulanTagihan').value;
+  const tahun   = document.getElementById('tahunTagihan').value;
+  const tenggat = document.getElementById('tenggatTagihan').value;
+
+  if (!bulan || !tahun || !tenggat) {
+    showNotif('Lengkapi bulan, tahun, dan tenggat pembayaran!', false);
+    btn.disabled = false;
+    btn.innerText = 'Simpan Tagihan';
+    return;
+  }
+
   try {
     const res = await fetch('simpan_tagihan.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ listrik, air, wifi, sampah })
+      body: JSON.stringify({ listrik, air, wifi, sampah, bulan, tahun, tenggat })
     });
 
     const data = await res.json();
 
     if (data.success) {
-      showNotif('Tagihan ' + data.bulan + ' berhasil disimpan!', true);
+      showNotif('Tagihan ' + data.bulan + ' ' + data.tahun + ' berhasil disimpan!', true);
 
       // Tambahkan baris baru ke tabel riwayat tanpa reload
       const tbody = document.getElementById('listTagihan');
       const emptyRow = tbody.querySelector('td[colspan]');
       if (emptyRow) emptyRow.closest('tr').remove();
 
+      // Format tanggal tenggat (YYYY-MM-DD) tanpa timezone shift
+      const [ty, tm, td] = data.tenggat_pembayaran.split('-');
+      const bulanNama = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+      const tenggatStr = `${td} ${bulanNama[parseInt(tm)-1]} ${ty}`;
+
       const row = document.createElement('tr');
       row.className = 'border-t border-gray-100 dark:border-[#222] hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition';
       row.innerHTML = `
-  <td class="py-4 font-medium">${data.bulan}</td>
+  <td class="py-4 font-medium">${data.bulan} ${data.tahun}</td>
   <td>Rp ${Math.round(data.total_tagihan).toLocaleString('id-ID')}</td>
-  <td>Rp ${Math.round(data.tarif_per_bobot).toLocaleString('id-ID')}</td>
   <td>${jumlahPenghuni} orang</td>
-  <td>${new Date(data.tenggat_pembayaran).toLocaleDateString('id-ID', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  })}</td>
+  <td>${tenggatStr}</td>
 `;
       tbody.prepend(row);
-      
 
     } else {
       showNotif('Gagal: ' + data.message, false);

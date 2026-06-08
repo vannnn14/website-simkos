@@ -49,6 +49,17 @@ $biaya_air      = floatval($data['air'] ?? 0);
 $biaya_wifi     = floatval($data['wifi'] ?? 0);
 $biaya_sampah   = floatval($data['sampah'] ?? 0);
 
+// Parse bulan, tahun, tenggat dari input manual
+$bulan_valid = ['January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+
+$bulan_text  = isset($data['bulan']) && in_array($data['bulan'], $bulan_valid)
+                ? $data['bulan'] : date('F');
+$tahun       = isset($data['tahun']) && intval($data['tahun']) >= 2020
+                ? intval($data['tahun']) : intval(date('Y'));
+$tenggat     = isset($data['tenggat']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $data['tenggat'])
+                ? $data['tenggat'] : date('Y-m-t');
+
 // Validasi nilai tidak negatif
 if ($biaya_listrik < 0 || $biaya_air < 0 || $biaya_wifi < 0 || $biaya_sampah < 0) {
     http_response_code(400);
@@ -129,15 +140,6 @@ if ($totalBobot <= 0) {
 // Total penghuni (aktif + tidak aktif) untuk pembagian air/wifi/sampah
 $totalSemuaPenghuni = $jumlahAktif + $jumlahTidakAktif;
 $tarifPerBobot = $totalSemuaPenghuni > 0 ? $total_tagihan / $totalSemuaPenghuni : 0;
-
-// ───────────────────────────────────────────────────────────────────────────────
-// 4. PERSIAPAN DATA TAGIHAN
-// ───────────────────────────────────────────────────────────────────────────────
-
-$bulan_int   = intval(date('n'));        // 1-12
-$bulan_text  = date('F');                // e.g. "June"
-$tahun       = intval(date('Y'));
-$tenggat     = date('Y-m-t');            // akhir bulan ini
 
 // ───────────────────────────────────────────────────────────────────────────────
 // 5. MULAI TRANSACTION (untuk konsistensi data)
