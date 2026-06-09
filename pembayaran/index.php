@@ -1,10 +1,6 @@
 <?php
 include '../config/koneksi.php';
 
-// =======================
-// STATISTIK PEMBAYARAN
-// =======================
-
 $totalPenghuni = mysqli_fetch_assoc(
     mysqli_query($conn,"SELECT COUNT(*) total FROM penghuni")
 )['total'];
@@ -40,6 +36,9 @@ $persentase = 0;
 if($totalTagihan > 0){
     $persentase = round(($totalLunas/$totalTagihan)*100);
 }
+
+require_once __DIR__ . '/../config/midtrans.php';
+$mtConnected = !empty(mtLoadConfig()['server_key']);
 
 $qPembayaran = mysqli_query($conn,"
 SELECT
@@ -115,25 +114,21 @@ ORDER BY dt.id DESC
     <!-- ACTION -->
     <div class="flex gap-3">
 
-      <!-- ANNOUNCEMENT -->
-      <button
-        class="px-5 py-3 rounded-2xl
+      <a href="kirim_reminder.php"
+        class="px-5 py-3 rounded-2xl inline-block
         bg-green-600 text-white
         hover:bg-green-700 transition shadow-lg">
-
         Kirim Reminder WhatsApp
+      </a>
 
+      <?php if ($mtConnected): ?>
+      <button onclick="openGenVAModal()" id="btnGenVAMassal"
+        class="px-5 py-3 rounded-2xl inline-block
+        bg-purple-600 text-white
+        hover:bg-purple-700 transition shadow-lg">
+        Generate VA Massal
       </button>
-
-      <!-- GENERATE -->
-                <a href="generate_pembayaran.php"
-          class="px-5 py-3 rounded-2xl
-          bg-blue-600 text-white
-          hover:bg-blue-700 transition shadow-lg">
-
-          + Generate Pembayaran
-
-          </a>
+      <?php endif; ?>
 
     </div>
 
@@ -287,16 +282,13 @@ class="input md:w-52">
         <thead>
 
           <tr class="text-gray-500 dark:text-gray-400 text-sm">
-
             <th class="pb-4">Nama Lengkap</th>
             <th>No. Kamar</th>
-            <th>NIK</th>
             <th>No. HP</th>
             <th>Total Tagihan</th>
-            <th>Status Pembayaran</th>
+            <th>VA Number</th>
+            <th>Status</th>
             <th>Aksi</th>
-
-
           </tr>
 
         </thead>
@@ -306,84 +298,57 @@ class="input md:w-52">
 <?php while($row = mysqli_fetch_assoc($qPembayaran)): ?>
 
 <tr class="border-t border-gray-100 dark:border-[#222]
-hover:bg-gray-50 dark:hover:bg-[#1a1a1a]
-transition"
+hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition"
 data-nama="<?= strtolower($row['nama_lengkap']) ?>"
 data-status="<?= $row['status_bayar'] ?>"
 data-id="<?= $row['id'] ?>"
-data-penghuni-id="<?= $row['penghuni_id'] ?>"
->
+data-penghuni-id="<?= $row['penghuni_id'] ?>">
 
-    <td class="py-4 font-medium">
-        <?= htmlspecialchars($row['nama_lengkap']) ?>
+    <td class="py-4 font-medium"><?= htmlspecialchars($row['nama_lengkap']) ?></td>
+    <td><?= $row['no_kamar'] ?></td>
+    <td><?= $row['no_hp'] ?></td>
+    <td>Rp <?= number_format($row['nominal_tagihan'],0,',','.') ?></td>
+
+    <td>
+      <?php if ($row['midtrans_va_number']): ?>
+        <span class="text-xs font-mono bg-gray-100 dark:bg-[#1a1a1a] px-2 py-1 rounded-lg">
+          <?= strtoupper($row['midtrans_va_bank']) ?>: <?= $row['midtrans_va_number'] ?>
+        </span>
+      <?php elseif ($row['status_bayar'] !== 'Lunas' && $mtConnected): ?>
+        <button onclick="genVASingle(<?= $row['id'] ?>, this)"
+          class="text-xs px-3 py-1.5 rounded-xl bg-purple-100 text-purple-700 hover:bg-purple-200 transition font-medium">
+          + VA
+        </button>
+      <?php else: ?>
+        <span class="text-xs text-gray-400">&mdash;</span>
+      <?php endif; ?>
     </td>
 
     <td>
-        <?= $row['no_kamar'] ?>
-    </td>
-
-    <td>
-        <?= $row['nik'] ?>
-    </td>
-
-    <td>
-        <?= $row['no_hp'] ?>
-    </td>
-
-    <td>
-        Rp <?= number_format($row['nominal_tagihan'],0,',','.') ?>
-    </td>
-
-    <td>
-
         <?php if($row['status_bayar'] == 'Lunas'): ?>
-
-            <span class="px-3 py-1 rounded-full text-xs bg-green-100 text-green-600">
-                Lunas
-            </span>
-
+            <span class="px-3 py-1 rounded-full text-xs bg-green-100 text-green-600">Lunas</span>
         <?php elseif($row['status_bayar'] == 'Sebagian'): ?>
-
-            <span class="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">
-                Sebagian
-            </span>
-
+            <span class="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">Sebagian</span>
         <?php else: ?>
-
-            <span class="px-3 py-1 rounded-full text-xs bg-red-100 text-red-600">
-                Belum Bayar
-            </span>
-
+            <span class="px-3 py-1 rounded-full text-xs bg-red-100 text-red-600">Belum Bayar</span>
         <?php endif; ?>
-
     </td>
 
     <td>
-
         <div class="flex gap-2">
-
             <?php if ($row['status_bayar'] !== 'Lunas'): ?>
-            <button
-            onclick="updateStatus(this, 'Lunas')"
-            class="btn-status px-3 py-2 rounded-xl
-            bg-green-100 text-green-700 text-sm font-medium
-            hover:bg-green-200 transition">
+            <button onclick="updateStatus(this, 'Lunas')"
+              class="btn-status px-3 py-2 rounded-xl bg-green-100 text-green-700 text-sm font-medium hover:bg-green-200 transition">
                 ✓ Tandai Lunas
             </button>
             <?php endif; ?>
-
             <?php if ($row['status_bayar'] === 'Lunas'): ?>
-            <button
-            onclick="updateStatus(this, 'Belum Bayar')"
-            class="btn-status px-3 py-2 rounded-xl
-            bg-gray-100 text-gray-600 text-sm font-medium
-            hover:bg-gray-200 transition">
+            <button onclick="updateStatus(this, 'Belum Bayar')"
+              class="btn-status px-3 py-2 rounded-xl bg-gray-100 text-gray-600 text-sm font-medium hover:bg-gray-200 transition">
                 ↩ Batal Lunas
             </button>
             <?php endif; ?>
-
         </div>
-
     </td>
 
 </tr>
@@ -406,6 +371,34 @@ data-penghuni-id="<?= $row['penghuni_id'] ?>"
   class="hidden fixed bottom-6 right-6 z-50
   px-5 py-3 rounded-2xl shadow-xl text-sm font-medium
   transition-all duration-300">
+</div>
+
+<!-- MODAL GENERATE VA -->
+<div id="genVAModal"
+  class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+  <div class="bg-white dark:bg-[#111] p-8 rounded-3xl shadow-xl border border-gray-100 dark:border-[#1f1f1f] w-full max-w-md mx-4">
+    <h3 class="text-xl font-semibold mb-2">Generate VA Massal</h3>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+      Pilih bank untuk membuat Virtual Account bagi penghuni yang belum memiliki VA.
+    </p>
+    <select id="genBankSelect" class="input mb-6">
+      <option value="bca">BCA</option>
+      <option value="bni">BNI</option>
+      <option value="mandiri">Mandiri</option>
+      <option value="bri">BRI</option>
+    </select>
+    <div class="flex justify-end gap-3">
+      <button onclick="closeGenVAModal()"
+        class="px-5 py-3 rounded-2xl bg-gray-200 dark:bg-[#1a1a1a] hover:opacity-80 transition">
+        Batal
+      </button>
+      <button onclick="genVAMassal()" id="btnGenVAConfirm"
+        class="px-5 py-3 rounded-2xl bg-purple-600 text-white hover:bg-purple-700 transition">
+        Generate
+      </button>
+    </div>
+    <div id="genVAResult" class="mt-4 hidden"></div>
+  </div>
 </div>
 
 <!-- STYLE -->
@@ -539,6 +532,133 @@ function showGlobalNotif(msg, sukses) {
   el.classList.remove('hidden');
   clearTimeout(el._t);
   el._t = setTimeout(() => el.classList.add('hidden'), 4000);
+}
+
+// ── Generate VA ──────────────────────────────────────────────────────────────
+function openGenVAModal() {
+  document.getElementById('genVAModal').classList.remove('hidden');
+  document.getElementById('genVAResult').classList.add('hidden');
+}
+
+function closeGenVAModal() {
+  document.getElementById('genVAModal').classList.add('hidden');
+}
+
+async function genVASingle(detailId, btn) {
+  const bank = prompt('Pilih bank (bca / bni / mandiri / bri):', 'bca');
+  if (!bank) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Memproses...';
+
+  try {
+    const res = await fetch('gen_va.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ detail_ids: [detailId], bank: bank })
+    });
+    const data = await res.json();
+
+    if (data.success && data.results[0]?.status === 'success') {
+      const r = data.results[0];
+      const td = btn.closest('td');
+      td.innerHTML = `<span class="text-xs font-mono bg-gray-100 dark:bg-[#1a1a1a] px-2 py-1 rounded-lg">
+        ${r.bank.toUpperCase()}: ${r.va_number}</span>`;
+      showGlobalNotif('✅ VA berhasil digenerate untuk ' + r.nama, true);
+    } else {
+      const err = data.results[0]?.error || 'Gagal generate VA';
+      btn.disabled = false;
+      btn.textContent = '+ VA';
+      showGlobalNotif('❌ ' + err, false);
+    }
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = '+ VA';
+    showGlobalNotif('❌ Terjadi kesalahan koneksi.', false);
+    console.error(e);
+  }
+}
+
+async function genVAMassal() {
+  const bank = document.getElementById('genBankSelect').value;
+  const btn = document.getElementById('btnGenVAConfirm');
+  const resultDiv = document.getElementById('genVAResult');
+
+  btn.disabled = true;
+  btn.textContent = 'Memproses...';
+  resultDiv.classList.add('hidden');
+
+  const ids = [];
+  document.querySelectorAll('#paymentTable tr').forEach(tr => {
+    const status = tr.dataset.status;
+    const vaTd = tr.querySelector('td:nth-child(5)');
+    if ((status === 'Belum Bayar' || status === 'Sebagian') && vaTd && vaTd.textContent.trim() === '') {
+      ids.push(tr.dataset.id);
+    }
+  });
+
+  if (ids.length === 0) {
+    resultDiv.className = 'mt-4 p-3 rounded-xl bg-yellow-100 text-yellow-700 text-sm';
+    resultDiv.textContent = 'Semua penghuni sudah memiliki VA.';
+    resultDiv.classList.remove('hidden');
+    btn.disabled = false;
+    btn.textContent = 'Generate';
+    return;
+  }
+
+  try {
+    const res = await fetch('gen_va.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ detail_ids: ids, bank: bank })
+    });
+    const data = await res.json();
+
+    let html = '';
+    let success = 0, failed = 0, skipped = 0;
+
+    data.results.forEach(r => {
+      if (r.status === 'success') {
+        success++;
+        const tr = document.querySelector(`#paymentTable tr[data-id="${r.detail_id}"]`);
+        if (tr) {
+          const vaTd = tr.querySelector('td:nth-child(5)');
+          if (vaTd) {
+            const btn = vaTd.querySelector('button');
+            if (btn) {
+              btn.outerHTML = `<span class="text-xs font-mono bg-gray-100 dark:bg-[#1a1a1a] px-2 py-1 rounded-lg">
+                ${r.bank.toUpperCase()}: ${r.va_number}</span>`;
+            }
+          }
+        }
+      } else if (r.status === 'skipped') {
+        skipped++;
+      } else {
+        failed++;
+        html += `<div class="text-red-600">❌ ${r.nama}: ${r.error}</div>`;
+      }
+    });
+
+    const totalMsg = `✅ ${success} berhasil`;
+    const skipMsg = skipped > 0 ? `, ⏭ ${skipped} sudah ada` : '';
+    const failMsg = failed > 0 ? `, ❌ ${failed} gagal` : '';
+
+    resultDiv.className = 'mt-4 p-3 rounded-xl text-sm ' +
+      (failed > 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700');
+    resultDiv.innerHTML = '<strong>' + totalMsg + skipMsg + failMsg + '</strong>' + html;
+    resultDiv.classList.remove('hidden');
+
+    showGlobalNotif(totalMsg + skipMsg + failMsg, failed === 0);
+  } catch (e) {
+    resultDiv.className = 'mt-4 p-3 rounded-xl bg-red-100 text-red-700 text-sm';
+    resultDiv.textContent = '❌ Terjadi kesalahan koneksi.';
+    resultDiv.classList.remove('hidden');
+    showGlobalNotif('❌ Gagal generate VA.', false);
+    console.error(e);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Generate';
 }
 
 </script>

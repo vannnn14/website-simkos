@@ -52,6 +52,11 @@ p-6 fixed left-0 top-0 overflow-y-auto">
       Payment Gateway
     </a>
 
+    <a href="/simkos-web/whatsapp-api/index.php"
+      class="<?= menuClass('whatsapp-api', $active) ?>">
+      WhatsApp API
+    </a>
+
     <a href="/simkos-web/laporan/index.php"
       class="<?= menuClass('laporan', $active) ?>">
       Laporan
