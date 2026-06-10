@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 09, 2026 at 02:08 PM
+-- Generation Time: Jun 10, 2026 at 03:26 PM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.0.30
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -34,6 +34,11 @@ CREATE TABLE `detail_tagihan` (
   `bobot` decimal(3,1) NOT NULL,
   `nominal_tagihan` decimal(12,2) NOT NULL,
   `status_bayar` enum('Belum Bayar','Lunas') DEFAULT 'Belum Bayar',
+  `midtrans_order_id` varchar(100) DEFAULT NULL,
+  `midtrans_va_number` varchar(50) DEFAULT NULL,
+  `midtrans_va_bank` varchar(20) DEFAULT NULL,
+  `midtrans_transaction_id` varchar(100) DEFAULT NULL,
+  `midtrans_expiry` datetime DEFAULT NULL,
   `tagihan_listrik` decimal(12,2) DEFAULT 0.00,
   `tagihan_wifi` decimal(12,2) DEFAULT 0.00,
   `tagihan_air` decimal(12,2) DEFAULT 0.00,
@@ -44,14 +49,14 @@ CREATE TABLE `detail_tagihan` (
 -- Dumping data for table `detail_tagihan`
 --
 
-INSERT INTO `detail_tagihan` (`id`, `tagihan_id`, `penghuni_id`, `bobot`, `nominal_tagihan`, `status_bayar`, `tagihan_listrik`, `tagihan_wifi`, `tagihan_air`, `tagihan_sampah`) VALUES
-(1, 7, 1, 1.0, 20000.00, 'Belum Bayar', 1000.00, 1000.00, 1000.00, 1000.00),
-(22, 10, 3, 0.5, 25000.00, 'Belum Bayar', 0.00, 8333.33, 8333.33, 8333.33),
-(23, 10, 1, 1.0, 37500.00, 'Belum Bayar', 12500.00, 8333.33, 8333.33, 8333.33),
-(24, 10, 4, 1.0, 37500.00, 'Belum Bayar', 12500.00, 8333.33, 8333.33, 8333.33),
-(25, 11, 3, 0.5, 25000.00, 'Belum Bayar', 0.00, 8333.33, 8333.33, 8333.33),
-(26, 11, 1, 1.0, 37500.00, 'Belum Bayar', 12500.00, 8333.33, 8333.33, 8333.33),
-(27, 11, 4, 1.0, 37500.00, 'Belum Bayar', 12500.00, 8333.33, 8333.33, 8333.33);
+INSERT INTO `detail_tagihan` (`id`, `tagihan_id`, `penghuni_id`, `bobot`, `nominal_tagihan`, `status_bayar`, `midtrans_order_id`, `midtrans_va_number`, `midtrans_va_bank`, `midtrans_transaction_id`, `midtrans_expiry`, `tagihan_listrik`, `tagihan_wifi`, `tagihan_air`, `tagihan_sampah`) VALUES
+(1, 7, 1, 1.0, 20000.00, 'Belum Bayar', 'SIMKOS-1-1781093038', '55418982881075280706174', 'bca', '4279667c-008a-4734-ab81-54d7f5b1cf1f', '2026-06-11 19:03:58', 1000.00, 1000.00, 1000.00, 1000.00),
+(22, 10, 3, 0.5, 25000.00, 'Belum Bayar', 'SIMKOS-22-1781092733', '55418675608666882594545', 'bca', 'fbfec79f-02e9-4d2c-a694-4d1d203c105d', '2026-06-11 18:58:53', 0.00, 8333.33, 8333.33, 8333.33),
+(23, 10, 1, 1.0, 37500.00, 'Belum Bayar', 'SIMKOS-23-1781025962', '55418674412241676448265', 'bca', 'd2970ec1-6f61-431f-a3d3-18c5ee3cbedf', '2026-06-11 00:26:03', 12500.00, 8333.33, 8333.33, 8333.33),
+(24, 10, 4, 1.0, 37500.00, 'Belum Bayar', 'SIMKOS-24-1781093036', '55418353003493312461356', 'bca', '32e09a9c-efe0-42ec-8935-cd7c8cf771b3', '2026-06-11 19:03:57', 12500.00, 8333.33, 8333.33, 8333.33),
+(25, 11, 3, 0.5, 25000.00, 'Belum Bayar', 'SIMKOS-25-1781024986', '55418062223423807443537', 'bca', '61bcc864-7a5b-4981-9e76-c3de3c3283d8', '2026-06-11 00:09:46', 0.00, 8333.33, 8333.33, 8333.33),
+(26, 11, 1, 1.0, 37500.00, 'Belum Bayar', 'SIMKOS-26-1781024060', '55418876158430433636818', 'bca', '83d41a91-094b-4384-91f6-f32dc39cc29f', '2026-06-10 23:54:20', 12500.00, 8333.33, 8333.33, 8333.33),
+(27, 11, 4, 1.0, 37500.00, 'Belum Bayar', 'SIMKOS-27-1781093167', '5540074913087420', 'permata', 'd3783ea8-e27a-4d4d-93d0-fdc20cc5b8b3', '2026-06-11 19:06:07', 12500.00, 8333.33, 8333.33, 8333.33);
 
 -- --------------------------------------------------------
 
@@ -71,6 +76,16 @@ CREATE TABLE `pembayaran` (
   `keterangan` text DEFAULT NULL,
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `pembayaran`
+--
+
+INSERT INTO `pembayaran` (`id`, `penghuni_id`, `detail_tagihan_id`, `jumlah_bayar`, `metode_pembayaran`, `tanggal_pembayaran`, `bukti_pembayaran`, `status`, `keterangan`, `updated_at`) VALUES
+(1, 3, 22, 25000.00, 'Tunai', '2026-06-10 12:19:16', NULL, 'Ditolak', 'Dibatalkan admin', '2026-06-10 12:58:39'),
+(2, 1, 23, 37500.00, 'Tunai', '2026-06-10 12:19:16', NULL, 'Ditolak', 'Dibatalkan admin', '2026-06-10 12:58:40'),
+(3, 3, 25, 25000.00, 'Tunai', '2026-06-10 12:19:16', NULL, 'Ditolak', 'Dibatalkan admin', '2026-06-10 12:58:31'),
+(4, 1, 1, 20000.00, 'Tunai', '2026-06-10 12:58:04', NULL, 'Ditolak', 'Dibatalkan admin', '2026-06-10 12:58:27');
 
 -- --------------------------------------------------------
 
@@ -94,8 +109,8 @@ CREATE TABLE `penghuni` (
 --
 
 INSERT INTO `penghuni` (`no`, `no_kamar`, `nik`, `nama_lengkap`, `alamat`, `no_hp`, `status_kamar`, `status_pembayaran`) VALUES
-(1, 3, '3301123131', 'Irvan Maulana', 'Purbalingga', '0845646', 'Aktif', 'Belum Lunas'),
-(3, 4, '333215', 'Deko Wirayuda', 'Majenang', '0548464', 'Tidak Aktif', 'Belum Lunas'),
+(1, 3, '3301123131', 'Irvan Maulana', 'Purbalingga', '6285641887122', 'Aktif', 'Belum Lunas'),
+(3, 4, '333215', 'Deko Wirayuda', 'Majenang', '6285641887122', 'Tidak Aktif', 'Belum Lunas'),
 (4, 2, '222222', 'Subhy', 'aaa', '085176751204', 'Aktif', 'Belum Lunas');
 
 -- --------------------------------------------------------
@@ -175,7 +190,7 @@ ALTER TABLE `detail_tagihan`
 -- AUTO_INCREMENT for table `pembayaran`
 --
 ALTER TABLE `pembayaran`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `penghuni`
