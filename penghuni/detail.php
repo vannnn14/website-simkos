@@ -1,13 +1,17 @@
 <?php
 include '../config/koneksi.php';
 
-$id = $_GET['id'];
+$id = intval($_GET['id'] ?? 0);
+if (!$id) {
+    echo "<script>alert('ID tidak valid');window.location='index.php';</script>";
+    exit;
+}
 
-$query = mysqli_query($conn, "SELECT * FROM penghuni WHERE no='$id'");
+$query = mysqli_query($conn, "SELECT * FROM penghuni WHERE no = $id");
 $data = mysqli_fetch_assoc($query);
 
-if(!$data){
-    echo "Data tidak ditemukan";
+if (!$data) {
+    echo "<script>alert('Data tidak ditemukan');window.location='index.php';</script>";
     exit;
 }
 ?>
@@ -47,7 +51,6 @@ if(!$data){
 
         <?php include '../components/topbar.php'; ?>
 
-        <!-- HEADER -->
         <div class="flex items-center justify-between mb-8">
 
             <div>
@@ -68,12 +71,10 @@ if(!$data){
 
         </div>
 
-        <!-- CARD -->
         <div class="bg-white dark:bg-[#111]
         border border-gray-100 dark:border-[#1f1f1f]
         rounded-3xl shadow-xl overflow-hidden">
 
-            <!-- TOP PROFILE -->
             <div class="p-8 border-b border-gray-100 dark:border-[#1f1f1f]">
 
                 <div class="flex flex-col md:flex-row gap-6 items-center">
@@ -84,11 +85,11 @@ if(!$data){
                     <div>
 
                         <h2 class="text-3xl font-bold text-gray-800 dark:text-white">
-                            <?= $data['nama_lengkap']; ?>
+                            <?= htmlspecialchars($data['nama_lengkap']); ?>
                         </h2>
 
                         <p class="text-gray-500 mt-2">
-                            Penghuni Kamar <?= $data['no_kamar']; ?>
+                            Penghuni Kamar <?= htmlspecialchars($data['no_kamar']); ?>
                         </p>
 
                         <?php if($data['status_kamar'] == 'Aktif') : ?>
@@ -111,87 +112,73 @@ if(!$data){
 
             </div>
 
-            <!-- DETAIL -->
             <div class="grid md:grid-cols-2 gap-6 p-8">
 
                 <div>
-                    <label class="text-gray-500 text-sm">
-                        Nomor HP
-                    </label>
-
+                    <label class="text-gray-500 text-sm">Nomor HP</label>
                     <div class="mt-2 p-4 rounded-2xl bg-gray-50 dark:bg-[#181818] text-gray-800 dark:text-white">
-                        <?= $data['no_hp']; ?>
+                        <?= htmlspecialchars($data['no_hp']); ?>
                     </div>
                 </div>
 
                 <div>
-                    <label class="text-gray-500 text-sm">
-                        Nomor NIK
-                    </label>
-
+                    <label class="text-gray-500 text-sm">Nomor NIK</label>
                     <div class="mt-2 p-4 rounded-2xl bg-gray-50 dark:bg-[#181818] text-gray-800 dark:text-white">
-                        <?= $data['nik']; ?>
+                        <?= htmlspecialchars($data['nik']); ?>
                     </div>
                 </div>
 
                 <div>
-                    <label class="text-gray-500 text-sm">
-                        Nomor Kamar
-                    </label>
-
+                    <label class="text-gray-500 text-sm">Nomor Kamar</label>
                     <div class="mt-2 p-4 rounded-2xl bg-gray-50 dark:bg-[#181818] text-gray-800 dark:text-white">
-                        <?= $data['no_kamar']; ?>
-                    </div>
-                </div>
-
-                
-
-                <div>
-                    <label class="text-gray-500 text-sm">
-                        Status Kamar
-                    </label>
-
-                    <div class="mt-2 p-4 rounded-2xl bg-gray-50 dark:bg-[#181818] text-gray-800 dark:text-white">
-                        <?= $data['status_kamar']; ?>
+                        <?= htmlspecialchars($data['no_kamar']); ?>
                     </div>
                 </div>
 
                 <div>
-                    <label class="text-gray-500 text-sm">
-                        Status Pembayaran
-                    </label>
+                    <label class="text-gray-500 text-sm">Status Kamar</label>
+                    <div class="mt-2 p-4 rounded-2xl bg-gray-50 dark:bg-[#181818]">
+                        <?php if($data['status_kamar'] == 'Aktif') : ?>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">Aktif</span>
+                        <?php else : ?>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">Tidak Aktif</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
 
-                    <div class="mt-2 p-4 rounded-2xl bg-gray-50 dark:bg-[#181818] text-gray-800 dark:text-white">
-                        <?= $data['status_pembayaran']; ?>
+                <div>
+                    <label class="text-gray-500 text-sm">Status Pembayaran</label>
+                    <div class="mt-2 p-4 rounded-2xl bg-gray-50 dark:bg-[#181818]">
+                        <?php if($data['status_pembayaran'] == 'Lunas') : ?>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">Lunas</span>
+                        <?php elseif($data['status_pembayaran'] == 'Menunggak') : ?>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-600">Menunggak</span>
+                        <?php else : ?>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">Belum Lunas</span>
+                        <?php endif; ?>
                     </div>
                 </div>
 
                 <div class="md:col-span-2">
-                    <label class="text-gray-500 text-sm">
-                        Alamat
-                    </label>
-
+                    <label class="text-gray-500 text-sm">Alamat</label>
                     <div class="mt-2 p-4 rounded-2xl bg-gray-50 dark:bg-[#181818] text-gray-800 dark:text-white">
-                        <?= $data['alamat']; ?>
+                        <?= htmlspecialchars($data['alamat']); ?>
                     </div>
                 </div>
 
             </div>
 
-            <!-- FOOTER -->
             <div class="p-8 border-t border-gray-100 dark:border-[#1f1f1f]">
 
                 <div class="flex gap-3">
 
-                    <a href="edit.php?id=<?= $data['no']; ?>"
-                        class="px-5 h-12 rounded-2xl bg-blue-600 hover:bg-blue-700
-                        text-white flex items-center justify-center">
+                    <a href="edit.php?id=<?= (int)$data['no']; ?>"
+                        class="px-5 h-12 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center">
                         Edit Data
                     </a>
 
-                    <a href="hapus.php?id=<?= $data['no']; ?>"
-                        class="px-5 h-12 rounded-2xl bg-red-600 hover:bg-red-700
-                        text-white flex items-center justify-center">
+                    <a href="hapus.php?id=<?= (int)$data['no']; ?>"
+                        class="px-5 h-12 rounded-2xl bg-red-600 hover:bg-red-700 text-white flex items-center justify-center">
                         Hapus
                     </a>
 

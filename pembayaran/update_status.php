@@ -24,6 +24,13 @@ if (!$detail_id || !$penghuni_id || !in_array($status_baru, $statusValid)) {
 mysqli_begin_transaction($conn);
 
 try {
+    // 0. Ambil nominal tagihan dan data detail
+    $qNominal = mysqli_query($conn,
+        "SELECT nominal_tagihan FROM detail_tagihan WHERE id = $detail_id"
+    );
+    $rNominal = mysqli_fetch_assoc($qNominal);
+    $nominal  = $rNominal['nominal_tagihan'] ?? 0;
+
     // 1. Update status_bayar di detail_tagihan
     $stmt1 = mysqli_prepare($conn,
         "UPDATE detail_tagihan SET status_bayar = ? WHERE id = ?"
@@ -31,6 +38,24 @@ try {
     mysqli_stmt_bind_param($stmt1, 'si', $status_baru, $detail_id);
     if (!mysqli_stmt_execute($stmt1)) {
         throw new Exception('Gagal update detail_tagihan: ' . mysqli_error($conn));
+    }
+
+    // 1b. Catat/void pembayaran
+    if ($status_baru === 'Lunas') {
+        $stmtPay = mysqli_prepare($conn,
+            "INSERT INTO pembayaran (penghuni_id, detail_tagihan_id, jumlah_bayar, metode_pembayaran, status, keterangan)
+             VALUES (?, ?, ?, 'Tunai', 'Diterima', 'Pembayaran manual via admin')"
+        );
+        mysqli_stmt_bind_param($stmtPay, 'iid', $penghuni_id, $detail_id, $nominal);
+        if (!mysqli_stmt_execute($stmtPay)) {
+            throw new Exception('Gagal insert pembayaran: ' . mysqli_error($conn));
+        }
+    } else {
+        $stmtVoid = mysqli_prepare($conn,
+            "UPDATE pembayaran SET status = 'Ditolak', keterangan = 'Dibatalkan admin' WHERE detail_tagihan_id = ? AND status = 'Diterima'"
+        );
+        mysqli_stmt_bind_param($stmtVoid, 'i', $detail_id);
+        mysqli_stmt_execute($stmtVoid);
     }
 
     // 2. Sinkronkan status_pembayaran di penghuni

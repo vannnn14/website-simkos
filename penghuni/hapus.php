@@ -2,14 +2,22 @@
 
 include '../config/koneksi.php';
 
-$id = $_GET['id'];
+$id = intval($_GET['id'] ?? 0);
+if (!$id) {
+    echo "<script>alert('ID tidak valid');window.location='index.php';</script>";
+    exit;
+}
 
-$data = mysqli_query($conn, "SELECT * FROM penghuni WHERE no='$id'");
+$data = mysqli_query($conn, "SELECT * FROM penghuni WHERE no = $id");
 $row = mysqli_fetch_assoc($data);
 
-if(isset($_POST['hapus'])){
+if (!$row) {
+    echo "<script>alert('Data tidak ditemukan');window.location='index.php';</script>";
+    exit;
+}
 
-    mysqli_query($conn, "DELETE FROM penghuni WHERE no='$id'");
+if (isset($_POST['hapus'])) {
+    mysqli_query($conn, "DELETE FROM penghuni WHERE no = $id");
 
     echo "
     <script>
@@ -18,6 +26,7 @@ if(isset($_POST['hapus'])){
     </script>
     ";
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -107,7 +116,7 @@ if(isset($_POST['hapus'])){
                         </span>
 
                         <h3 class="text-lg font-semibold text-gray-800 dark:text-white">
-                            <?= $row['nama_lengkap']; ?>
+                            <?= htmlspecialchars($row['nama_lengkap']); ?>
                         </h3>
                     </div>
 
@@ -117,7 +126,7 @@ if(isset($_POST['hapus'])){
                         </span>
 
                         <h3 class="text-lg font-semibold text-gray-800 dark:text-white">
-                            <?= $row['nik']; ?>
+                            <?= htmlspecialchars($row['nik']); ?>
                         </h3>
                     </div>
 
@@ -127,7 +136,7 @@ if(isset($_POST['hapus'])){
                         </span>
 
                         <h3 class="text-lg font-semibold text-gray-800 dark:text-white">
-                            <?= $row['no_kamar']; ?>
+                            <?= htmlspecialchars($row['no_kamar']); ?>
                         </h3>
                     </div>
 

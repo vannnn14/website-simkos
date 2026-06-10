@@ -147,7 +147,7 @@
 <?php
 include '../config/koneksi.php';
 
-$cari = isset($_GET['cari']) ? $_GET['cari'] : '';
+$cari = isset($_GET['cari']) ? mysqli_real_escape_string($conn, $_GET['cari']) : '';
 
 if($cari != ''){
     $query = mysqli_query($conn,"
@@ -167,30 +167,30 @@ while($row = mysqli_fetch_assoc($query)) :
 
 <tr
 class="data-row border-t border-gray-100 dark:border-[#1f1f1f] hover:bg-gray-50 dark:hover:bg-[#151515] transition"
-data-status="<?= strtolower(trim($row['status_kamar'])); ?>">
+data-status="<?= htmlspecialchars(strtolower(trim($row['status_kamar']))); ?>">
 
     <td class="px-6 py-5">
-        <?= $row['no']; ?>
+        <?= (int)$row['no']; ?>
     </td>
 
     <td class="px-6 py-5">
-        <?= $row['nama_lengkap']; ?>
+        <?= htmlspecialchars($row['nama_lengkap']); ?>
     </td>
 
     <td class="px-6 py-5">
-        <?= $row['nik']; ?>
+        <?= htmlspecialchars($row['nik']); ?>
     </td>
 
     <td class="px-6 py-5">
-        <?= $row['no_kamar']; ?>
+        <?= (int)$row['no_kamar']; ?>
     </td>
 
     <td class="px-6 py-5">
-        <?= $row['no_hp']; ?>
+        <?= htmlspecialchars($row['no_hp']); ?>
     </td>
 
     <td class="px-6 py-5">
-    <?= $row['alamat']; ?>
+    <?= htmlspecialchars($row['alamat']); ?>
 </td>
 
     <td class="px-6 py-5">
@@ -239,17 +239,17 @@ data-status="<?= strtolower(trim($row['status_kamar'])); ?>">
 
     <div class="flex items-center justify-center gap-2">
 
-        <a href="detail.php?id=<?= $row['no']; ?>"
+        <a href="detail.php?id=<?= (int)$row['no']; ?>"
            class="px-4 py-2 rounded-xl bg-green-100 text-green-600 text-sm font-medium hover:opacity-80">
             Detail
         </a>
 
-        <a href="edit.php?id=<?= $row['no']; ?>"
+        <a href="edit.php?id=<?= (int)$row['no']; ?>"
            class="px-4 py-2 rounded-xl bg-blue-100 text-blue-600 text-sm font-medium hover:opacity-80">
             Edit
         </a>
 
-        <a href="hapus.php?id=<?= $row['no']; ?>"
+        <a href="hapus.php?id=<?= (int)$row['no']; ?>"
            onclick="return confirm('Yakin ingin menghapus data ini?')"
            class="px-4 py-2 rounded-xl bg-red-100 text-red-500 text-sm font-medium hover:opacity-80">
             Hapus
