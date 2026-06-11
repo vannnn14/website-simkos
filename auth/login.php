@@ -1,29 +1,42 @@
+<?php
+session_start();
+if (isset($_SESSION['user'])) {
+    header('Location: /simkos-web/dashboard/index.php');
+    exit;
+}
+
+include '../config/koneksi.php';
+
+$error = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = mysqli_real_escape_string($conn, $_POST['username']);
+    $password = $_POST['password'];
+
+    $q = mysqli_query($conn, "SELECT * FROM users WHERE username = '$username'");
+    $user = mysqli_fetch_assoc($q);
+
+    if ($user && password_verify($password, $user['password'])) {
+        $_SESSION['user'] = [
+            'id'           => (int)$user['id'],
+            'username'     => $user['username'],
+            'nama_lengkap' => $user['nama_lengkap'],
+        ];
+        header('Location: /simkos-web/dashboard/index.php');
+        exit;
+    } else {
+        $error = 'Username atau password salah';
+    }
+}
+?>
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SIMKOS Login</title>
 
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Font -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-  <script>
-    tailwind.config = {
-      darkMode: 'class'
-    }
-  </script>
-
-  <style>
-    body{
-      font-family:'Inter',sans-serif;
-      overflow:hidden;
-    }
-  </style>
+  <?php include '../components/theme.php'; ?>
+  <style>body{overflow:hidden}</style>
 </head>
 
 <body class="bg-[#a1a197] dark:bg-[#8f9187] transition duration-500">
@@ -163,6 +176,14 @@
           </div>
 
           <!-- USERNAME -->
+          <form method="POST" class="mt-10">
+
+          <?php if ($error): ?>
+            <div class="mb-4 p-3 rounded-xl bg-red-100 text-red-600 text-sm font-medium">
+              <?= htmlspecialchars($error) ?>
+            </div>
+          <?php endif; ?>
+
           <div class="mb-6">
 
             <label class="block text-sm text-gray-700 dark:text-gray-300 mb-3">
@@ -171,7 +192,9 @@
 
             <input
               type="text"
+              name="username"
               placeholder="Enter your username"
+              required
               class="w-full h-14 rounded-2xl border border-gray-300 dark:border-[#252525] bg-gray-100 dark:bg-[#0d0d0d] px-5 text-black dark:text-white outline-none focus:border-[#cfd7b0] focus:ring-4 focus:ring-[#cfd7b0]/10 transition"
             >
 
@@ -186,7 +209,9 @@
 
             <input
               type="password"
+              name="password"
               placeholder="••••••••"
+              required
               class="w-full h-14 rounded-2xl border border-gray-300 dark:border-[#252525] bg-gray-100 dark:bg-[#0d0d0d] px-5 text-black dark:text-white outline-none focus:border-[#cfd7b0] focus:ring-4 focus:ring-[#cfd7b0]/10 transition"
             >
 
@@ -213,8 +238,8 @@
           </div>
 
           <!-- BUTTON -->
-            <button 
-            onclick="window.location.href='dashboard/index.php'"
+            <button
+            type="submit"
             class="w-full h-14 rounded-2xl bg-black dark:bg-[#cfd7b0] text-white dark:text-black font-semibold mt-8 hover:scale-[1.01] transition duration-300"
             >
             Login to Dashboard
@@ -226,6 +251,8 @@
     Register
   </a>
 </div>
+
+          </form>
 
           <!-- FOOTER -->
           <div class="mt-10 text-center text-sm text-gray-500 dark:text-gray-600">
@@ -241,13 +268,6 @@
     </div>
 
   </div>
-
-  <!-- SCRIPT -->
-  <script>
-    function toggleTheme(){
-      document.documentElement.classList.toggle('dark')
-    }
-  </script>
 
 </body>
 </html>

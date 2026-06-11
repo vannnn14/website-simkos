@@ -1,5 +1,6 @@
 <?php
 include '../config/koneksi.php';
+include '../config/auth.php';
 
 // ── Stat Cards ─────────────────────────────────────────────────────────────────
 $totalPenghuni = mysqli_fetch_assoc(
@@ -64,11 +65,8 @@ if ($latestKey && isset($months[$latestKey])) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pembayaran - SIMKOS</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script>tailwind.config={darkMode:'class'}</script>
+  <?php include '../components/theme.php'; ?>
   <style>
-    body{font-family:'Inter',sans-serif}
     .input{width:100%;height:48px;padding:0 16px;border-radius:14px;background:#f3f4f6;border:1px solid #e5e7eb;outline:none}
     .dark .input{background:#0d0d0d;border:1px solid #222;color:white}
     details summary::-webkit-details-marker{display:none}

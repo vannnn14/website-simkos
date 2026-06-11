@@ -1,0 +1,23 @@
+{
+  "name": "simkos-web",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build:css": "npx tailwindcss -i src/tailwind.css -o public/tailwind.css --minify"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vannnn14/website-simkos.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vannnn14/website-simkos/issues"
+  },
+  "homepage": "https://github.com/vannnn14/website-simkos#readme",
+  "description": "",
+  "devDependencies": {
+    "tailwindcss": "^3.4.19"
+  }
+}

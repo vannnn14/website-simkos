@@ -12,6 +12,7 @@
  */
 
 include '../config/koneksi.php';
+include '../config/auth.php';
 
 header('Content-Type: application/json');
 

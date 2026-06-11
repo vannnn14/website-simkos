@@ -1,27 +1,48 @@
+<?php
+session_start();
+if (isset($_SESSION['user'])) {
+    header('Location: /simkos-web/dashboard/index.php');
+    exit;
+}
+
+include '../config/koneksi.php';
+
+$error = '';
+$success = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nama_lengkap    = mysqli_real_escape_string($conn, $_POST['nama_lengkap']);
+    $username        = mysqli_real_escape_string($conn, $_POST['username']);
+    $password        = $_POST['password'];
+    $password_confirm = $_POST['password_confirm'];
+
+    if (empty($nama_lengkap) || empty($username) || empty($password)) {
+        $error = 'Semua field harus diisi';
+    } elseif ($password !== $password_confirm) {
+        $error = 'Password tidak cocok';
+    } elseif (strlen($password) < 4) {
+        $error = 'Password minimal 4 karakter';
+    } else {
+        $q = mysqli_query($conn, "SELECT id FROM users WHERE username = '$username'");
+        if (mysqli_fetch_assoc($q)) {
+            $error = 'Username sudah digunakan';
+        } else {
+            $hash = password_hash($password, PASSWORD_DEFAULT);
+            mysqli_query($conn, "INSERT INTO users (username, password, nama_lengkap) VALUES ('$username', '$hash', '$nama_lengkap')");
+            $success = 'Akun berhasil dibuat. Silakan login.';
+        }
+    }
+}
+?>
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SIMKOS Register</title>
 
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-  <script>
-    tailwind.config = {
-      darkMode: 'class'
-    }
-  </script>
-
-  <style>
-    body{
-      font-family:'Inter',sans-serif;
-      overflow:hidden;
-    }
-  </style>
+  <?php include '../components/theme.php'; ?>
+  <style>body{overflow:hidden}</style>
 </head>
 
 <body class="bg-[#a1a197] dark:bg-[#8f9187] transition duration-500">
@@ -106,21 +127,32 @@
           </div>
 
           <!-- INPUTS -->
+          <form method="POST">
+
+          <?php if ($error): ?>
+            <div class="mb-4 p-3 rounded-xl bg-red-100 text-red-600 text-sm font-medium">
+              <?= htmlspecialchars($error) ?>
+            </div>
+          <?php endif; ?>
+
+          <?php if ($success): ?>
+            <div class="mb-4 p-3 rounded-xl bg-green-100 text-green-600 text-sm font-medium">
+              <?= htmlspecialchars($success) ?>
+            </div>
+          <?php endif; ?>
+
           <div class="space-y-4">
 
-            <input type="text" placeholder="Full Name"
+            <input type="text" name="nama_lengkap" placeholder="Full Name" required
               class="w-full h-12 rounded-xl border border-gray-300 dark:border-[#252525] bg-gray-100 dark:bg-[#0d0d0d] px-4 text-sm text-black dark:text-white focus:ring-2 focus:ring-[#cfd7b0]/20 outline-none">
 
-            <input type="text" placeholder="Username"
+            <input type="text" name="username" placeholder="Username" required
               class="w-full h-12 rounded-xl border border-gray-300 dark:border-[#252525] bg-gray-100 dark:bg-[#0d0d0d] px-4 text-sm text-black dark:text-white focus:ring-2 focus:ring-[#cfd7b0]/20 outline-none">
 
-            <input type="email" placeholder="Email"
+            <input type="password" name="password" placeholder="Password" required
               class="w-full h-12 rounded-xl border border-gray-300 dark:border-[#252525] bg-gray-100 dark:bg-[#0d0d0d] px-4 text-sm text-black dark:text-white focus:ring-2 focus:ring-[#cfd7b0]/20 outline-none">
 
-            <input type="password" placeholder="Password"
-              class="w-full h-12 rounded-xl border border-gray-300 dark:border-[#252525] bg-gray-100 dark:bg-[#0d0d0d] px-4 text-sm text-black dark:text-white focus:ring-2 focus:ring-[#cfd7b0]/20 outline-none">
-
-            <input type="password" placeholder="Confirm Password"
+            <input type="password" name="password_confirm" placeholder="Confirm Password" required
               class="w-full h-12 rounded-xl border border-gray-300 dark:border-[#252525] bg-gray-100 dark:bg-[#0d0d0d] px-4 text-sm text-black dark:text-white focus:ring-2 focus:ring-[#cfd7b0]/20 outline-none">
 
           </div>
@@ -132,7 +164,7 @@
           </div>
 
           <!-- BUTTON -->
-          <button class="w-full h-12 rounded-xl bg-black dark:bg-[#cfd7b0] text-white dark:text-black font-semibold mt-6">
+          <button type="submit" class="w-full h-12 rounded-xl bg-black dark:bg-[#cfd7b0] text-white dark:text-black font-semibold mt-6">
             Create Account
           </button>
 
@@ -144,6 +176,8 @@
             </a>
           </div>
 
+          </form>
+
         </div>
 
       </div>
@@ -151,12 +185,6 @@
     </div>
 
   </div>
-
-  <script>
-    function toggleTheme(){
-      document.documentElement.classList.toggle('dark')
-    }
-  </script>
 
 </body>
 </html>

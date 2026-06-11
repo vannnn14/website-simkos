@@ -1,6 +1,7 @@
 <?php
 
 include '../config/koneksi.php';
+include '../config/auth.php';
 
 if (isset($_POST['simpan'])) {
     $nama_lengkap      = mysqli_real_escape_string($conn, $_POST['nama_lengkap']);
@@ -33,28 +34,14 @@ if (isset($_POST['simpan'])) {
 ?>
 
 <!DOCTYPE html>
-<html lang="id" class="dark">
+<html lang="id">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tambah Penghuni - SIMKOS</title>
 
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-  <script>
-    tailwind.config = {
-      darkMode: 'class'
-    }
-  </script>
-
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-  </style>
+  <?php include '../components/theme.php'; ?>
 
 </head>
 

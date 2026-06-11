@@ -1,5 +1,6 @@
 <?php
 include '../config/koneksi.php';
+include '../config/auth.php';
 
 // Ambil daftar tagihan
 $qTagihan = mysqli_query($conn, "
@@ -78,20 +79,9 @@ if ($selected_tagihan_id) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pembagian Tagihan - SIMKOS</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <?php include '../components/theme.php'; ?>
 
-    <script>
-        tailwind.config = {
-            darkMode: 'class'
-        }
-    </script>
 
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-    </style>
 </head>
 
 <body class="bg-gray-100 dark:bg-[#0f0f0f] text-gray-800 dark:text-white">

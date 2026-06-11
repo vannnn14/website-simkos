@@ -1,2 +1,4 @@
 config/midtrans.json
 config/whatsapp.json
+node_modules/
+public/tailwind.css

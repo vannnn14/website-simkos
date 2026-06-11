@@ -1,4 +1,5 @@
 <?php
+include '../config/auth.php';
 require_once __DIR__ . '/../config/midtrans.php';
 
 header('Content-Type: application/json');

@@ -1,5 +1,6 @@
 <?php
 include '../config/koneksi.php';
+include '../config/auth.php';
 
 // ── Data untuk filter ─────────────────────────────────────────────────────────
 $qMonths = mysqli_query($conn, "
@@ -89,11 +90,8 @@ $qDetail = mysqli_query($conn, "
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Laporan Keuangan - SIMKOS</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script>tailwind.config={darkMode:'class'}</script>
+  <?php include '../components/theme.php'; ?>
   <style>
-    body{font-family:'Inter',sans-serif}
     @media print {
       @page{margin:1.5cm}
       *{box-shadow:none!important;text-shadow:none!important}

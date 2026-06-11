@@ -116,6 +116,28 @@ INSERT INTO `penghuni` (`no`, `no_kamar`, `nik`, `nama_lengkap`, `alamat`, `no_h
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `users`
+--
+
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `nama_lengkap` varchar(100) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `username`, `password`, `nama_lengkap`) VALUES
+(1, 'admin', '$2y$10$eiWFHgY0y8cRAv9dvhccKOZfO0B3l5sN7hjUQiT/x3Z2q7IbGu8se', 'Administrator');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `tagihan_utilitas`
 --
 

@@ -1,5 +1,6 @@
 <?php
 include '../config/koneksi.php';
+include '../config/auth.php';
 
 // ── Hitung bobot ─────────────────────────────────────────────────────────────
 $qAktif      = mysqli_query($conn, "SELECT COUNT(*) AS total FROM penghuni WHERE status_kamar='Aktif'");
@@ -25,12 +26,8 @@ $qRiwayat = mysqli_query($conn, "
 <head>
   <meta charset="UTF-8">
   <title>Tagihan - SIMKOS</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script>tailwind.config = { darkMode: 'class' }</script>
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-    .input {
+  <?php include '../components/theme.php'; ?>
+  <style>.input {
       width: 100%; height: 48px; padding: 0 16px;
       border-radius: 12px;
       background: #f3f4f6; border: 1px solid #e5e7eb; outline: none;

@@ -1,6 +1,7 @@
 <?php
 
 include '../config/koneksi.php';
+include '../config/auth.php';
 
 $id = intval($_GET['id'] ?? 0);
 if (!$id) {
@@ -30,28 +31,14 @@ if (isset($_POST['hapus'])) {
 ?>
 
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hapus Penghuni - SIMKOS</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <script>
-        tailwind.config = {
-            darkMode: 'class'
-        }
-    </script>
-
-    <style>
-        body{
-            font-family:'Inter',sans-serif;
-        }
-    </style>
+    <?php include '../components/theme.php'; ?>
 
 </head>
 

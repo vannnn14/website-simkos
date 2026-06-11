@@ -1,5 +1,6 @@
 <?php
 include '../config/koneksi.php';
+include '../config/auth.php';
 
 $pemasukan = mysqli_fetch_assoc(mysqli_query($conn, "
     SELECT COALESCE(SUM(jumlah_bayar), 0) total FROM pembayaran WHERE status = 'Diterima'
@@ -43,16 +44,13 @@ if (empty($chartLabels)) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard - SIMKOS</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <?php include '../components/theme.php'; ?>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script>tailwind.config={darkMode:'class'}</script>
-  <style>body{font-family:'Inter',sans-serif}</style>
 </head>
 <body class="bg-gray-100 dark:bg-[#0f0f0f]">
 
@@ -174,12 +172,6 @@ if (empty($chartLabels)) {
         }
       }
     });
-  </script>
-
-  <script>
-    function toggleTheme(){
-      document.documentElement.classList.toggle('dark')
-    }
   </script>
 
 </body>

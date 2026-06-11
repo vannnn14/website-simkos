@@ -1,4 +1,5 @@
 <?php
+include '../config/auth.php';
 require_once __DIR__ . '/../config/whatsapp.php';
 
 header('Content-Type: application/json');
