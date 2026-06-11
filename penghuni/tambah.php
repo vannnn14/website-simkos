@@ -20,14 +20,10 @@ if (isset($_POST['simpan'])) {
     )");
 
     if ($query) {
-        echo "<script>
-            alert('Data penghuni berhasil ditambahkan');
-            window.location='index.php';
-        </script>";
+        header('Location: index.php?msg=' . urlencode('Data penghuni berhasil ditambahkan') . '&type=success');
+        exit;
     } else {
-        echo "<script>
-            alert('Gagal menambahkan data');
-        </script>";
+        $error = 'Gagal menambahkan data: ' . mysqli_error($conn);
     }
 }
 
@@ -47,10 +43,11 @@ if (isset($_POST['simpan'])) {
 
 <body class="bg-gray-100 dark:bg-[#0f0f0f]">
 
+<?php $pageTitle = 'Tambah Penghuni'; ?>
 <?php $active = 'penghuni'; ?>
 <?php include '../components/sidebar.php'; ?>
 
-<div class="ml-64 p-8">
+<div class="lg:ml-64 p-4 lg:p-8 pt-4">
 
     <?php include '../components/topbar.php'; ?>
 
@@ -68,6 +65,13 @@ if (isset($_POST['simpan'])) {
         rounded-3xl shadow-xl
         border border-gray-100 dark:border-[#1f1f1f]
         p-8">
+
+        <?php if (!empty($error)): ?>
+            <div class="mb-6 p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm flex items-center gap-3">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                <?= htmlspecialchars($error) ?>
+            </div>
+        <?php endif; ?>
 
         <form method="POST">
 

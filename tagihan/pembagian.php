@@ -86,11 +86,12 @@ if ($selected_tagihan_id) {
 
 <body class="bg-gray-100 dark:bg-[#0f0f0f] text-gray-800 dark:text-white">
 
+<?php $pageTitle = 'Pembagian Tagihan'; ?>
 <?php $active = 'tagihan'; ?>
 <?php include '../components/sidebar.php'; ?>
 
 <!-- MAIN CONTENT -->
-<div class="ml-64 p-8">
+<div class="lg:ml-64 p-4 lg:p-8 pt-4">
     <?php include '../components/topbar.php'; ?>
 
     <div class="max-w-7xl mx-auto">

@@ -14,13 +14,12 @@
 
 <body class="bg-gray-100 dark:bg-[#0f0f0f]">
 
-  <!-- SIDEBAR -->
+  <?php $pageTitle = 'Data Penghuni'; ?>
   <?php $active = 'penghuni'; ?>
   <?php include '../components/sidebar.php'; ?>
-  <!-- MAIN -->
-  <div class="ml-64 p-8">
 
-    <!-- TOPBAR -->
+  <div class="lg:ml-64 p-4 lg:p-8 pt-4">
+
     <?php include '../components/topbar.php'; ?>
 
     <!-- HEADER -->
@@ -94,37 +93,37 @@
       </div>
 
       <!-- TABLE -->
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto relative">
 
         <table class="w-full">
 
       <!-- HEAD -->
-<thead class="bg-gray-50 dark:bg-[#0d0d0d]">
+<thead class="bg-gray-50 dark:bg-[#0d0d0d] sticky top-0 z-10">
 
-    <tr class="text-left text-sm text-gray-500 dark:text-gray-400">
+    <tr class="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
 
-        <th class="px-6 py-5 font-medium">No</th>
+        <th class="px-6 py-5">No</th>
 
-        <th class="px-6 py-5 font-medium">Nama Lengkap</th>
+        <th class="px-6 py-5">Nama Lengkap</th>
 
-        <th class="px-6 py-5 font-medium">NIK</th>
+        <th class="px-6 py-5">NIK</th>
 
-        <th class="px-6 py-5 font-medium">No Kamar</th>
+        <th class="px-6 py-5">No Kamar</th>
 
-        <th class="px-6 py-5 font-medium">No HP</th>
+        <th class="px-6 py-5">No HP</th>
 
-        <th class="px-6 py-5 font-medium">Alamat</th>
+        <th class="px-6 py-5">Alamat</th>
 
-        <th class="px-6 py-5 font-medium">Status Kamar</th>
+        <th class="px-6 py-5">Status Kamar</th>
 
-        <th class="px-6 py-5 font-medium">Status Pembayaran</th>
+        <th class="px-6 py-5">Status Pembayaran</th>
 
-        <th class="px-6 py-5 font-medium text-center">Aksi</th>
+        <th class="px-6 py-5 text-center">Aksi</th>
 
     </tr>
 
 </thead>
-<tbody class="text-gray-700 dark:text-gray-300">
+<tbody class="text-sm text-gray-700 dark:text-gray-300">
 
 <?php
 include '../config/koneksi.php';
@@ -148,7 +147,7 @@ while($row = mysqli_fetch_assoc($query)) :
 ?>
 
 <tr
-class="data-row border-t border-gray-100 dark:border-[#1f1f1f] hover:bg-gray-50 dark:hover:bg-[#151515] transition"
+class="data-row even:bg-gray-50/50 dark:even:bg-[#0a0a0a] border-t border-gray-100 dark:border-[#1f1f1f] hover:bg-gray-50 dark:hover:bg-[#151515] transition"
 data-status="<?= htmlspecialchars(strtolower(trim($row['status_kamar']))); ?>">
 
     <td class="px-6 py-5">
@@ -293,6 +292,18 @@ function filterData() {
 searchInput.addEventListener('keyup', filterData);
 statusFilter.addEventListener('change', filterData);
 
+// ── Flash message from redirect ──────────────────────────────────────────
+const urlParams = new URLSearchParams(window.location.search);
+const msg = urlParams.get('msg');
+const type = urlParams.get('type');
+if (msg) {
+  showToast(decodeURIComponent(msg), type || 'success');
+  // Clean URL
+  const url = new URL(window.location);
+  url.searchParams.delete('msg');
+  url.searchParams.delete('type');
+  window.history.replaceState({}, '', url);
+}
 </script>
 
 </body>

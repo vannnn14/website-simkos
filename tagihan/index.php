@@ -40,10 +40,11 @@ $qRiwayat = mysqli_query($conn, "
 
 <body class="bg-gray-100 dark:bg-[#0f0f0f] text-gray-800 dark:text-white">
 
+<?php $pageTitle = 'Tagihan Bulanan'; ?>
 <?php $active = 'tagihan'; ?>
 <?php include '../components/sidebar.php'; ?>
 
-<div class="ml-64 p-8">
+<div class="lg:ml-64 p-4 lg:p-8 pt-4">
 
   <?php include '../components/topbar.php'; ?>
 
@@ -147,6 +148,7 @@ $qRiwayat = mysqli_query($conn, "
             <th>Total Tagihan</th>
             <th>Penghuni</th>
             <th>Tenggat</th>
+            <th class="text-center">Aksi</th>
           </tr>
         </thead>
         <tbody id="listTagihan">
@@ -154,7 +156,7 @@ $qRiwayat = mysqli_query($conn, "
           <?php if (mysqli_num_rows($qRiwayat) === 0): ?>
 
           <tr>
-            <td colspan="4" class="py-6 text-center text-gray-400">
+            <td colspan="5" class="py-6 text-center text-gray-400">
               Belum ada tagihan tercatat.
             </td>
           </tr>
@@ -178,6 +180,19 @@ $qRiwayat = mysqli_query($conn, "
 
             <td>
               <?= date('d M Y', strtotime($t['tenggat_pembayaran'])) ?>
+            </td>
+
+            <td class="text-center">
+              <div class="flex items-center justify-center gap-2">
+                <a href="edit.php?id=<?= (int)$t['id'] ?>"
+                  class="px-3 py-1.5 rounded-xl bg-blue-100 text-blue-600 text-xs font-medium hover:bg-blue-200 transition">
+                  Edit
+                </a>
+                <a href="hapus.php?id=<?= (int)$t['id'] ?>"
+                  class="px-3 py-1.5 rounded-xl bg-red-100 text-red-600 text-xs font-medium hover:bg-red-200 transition">
+                  Hapus
+                </a>
+              </div>
             </td>
 
           </tr>
@@ -533,6 +548,18 @@ async function tambahTagihan() {
 
   btn.disabled  = false;
   btn.innerText = 'Simpan Tagihan';
+}
+
+// ── Flash message ────────────────────────────────────────────────────────
+const urlParams = new URLSearchParams(window.location.search);
+const msg = urlParams.get('msg');
+const type = urlParams.get('type');
+if (msg) {
+  showNotif(decodeURIComponent(msg), type !== 'error');
+  const url = new URL(window.location);
+  url.searchParams.delete('msg');
+  url.searchParams.delete('type');
+  window.history.replaceState({}, '', url);
 }
 </script>
 

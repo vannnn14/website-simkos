@@ -5,7 +5,7 @@ include '../config/auth.php';
 
 $id = intval($_GET['id'] ?? 0);
 if (!$id) {
-    echo "<script>alert('ID tidak valid');window.location='index.php';</script>";
+    header('Location: index.php?msg=' . urlencode('ID tidak valid') . '&type=error');
     exit;
 }
 
@@ -13,7 +13,7 @@ $data = mysqli_query($conn, "SELECT * FROM penghuni WHERE no = $id");
 $row = mysqli_fetch_assoc($data);
 
 if (!$row) {
-    echo "<script>alert('Data tidak ditemukan');window.location='index.php';</script>";
+    header('Location: index.php?msg=' . urlencode('Data tidak ditemukan') . '&type=error');
     exit;
 }
 
@@ -36,12 +36,8 @@ if (isset($_POST['update'])) {
         WHERE no = $id
     ");
 
-    echo "
-    <script>
-        alert('Data berhasil diperbarui');
-        window.location='index.php';
-    </script>
-    ";
+    header('Location: index.php?msg=' . urlencode('Data berhasil diperbarui') . '&type=success');
+    exit;
 }
 ?>
 
@@ -59,10 +55,11 @@ if (isset($_POST['update'])) {
 
 <body class="bg-gray-100 dark:bg-[#0f0f0f]">
 
+<?php $pageTitle = 'Edit Penghuni'; ?>
 <?php $active = 'penghuni'; ?>
 <?php include '../components/sidebar.php'; ?>
 
-<div class="ml-64 p-8">
+<div class="lg:ml-64 p-4 lg:p-8 pt-4">
 
     <?php include '../components/topbar.php'; ?>
 

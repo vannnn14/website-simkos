@@ -75,10 +75,11 @@ if ($latestKey && isset($months[$latestKey])) {
 </head>
 <body class="bg-gray-100 dark:bg-[#0f0f0f] text-gray-800 dark:text-white">
 
+<?php $pageTitle = 'Pembayaran'; ?>
 <?php $active = 'pembayaran'; ?>
 <?php include '../components/sidebar.php'; ?>
 
-<div class="ml-64 p-8">
+<div class="lg:ml-64 p-4 lg:p-8 pt-4">
 
   <?php include '../components/topbar.php'; ?>
 
@@ -183,10 +184,10 @@ if ($latestKey && isset($months[$latestKey])) {
     </summary>
 
     <div class="border-t border-gray-100 dark:border-[#1f1f1f]">
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto relative">
         <table class="w-full text-left">
           <thead>
-            <tr class="text-gray-500 dark:text-gray-400 text-sm">
+            <tr class="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider font-semibold sticky top-0 z-10 bg-white dark:bg-[#111]">
               <th class="px-6 py-4">Nama Lengkap</th>
               <th class="px-6 py-4">No. Kamar</th>
               <th class="px-6 py-4">No. HP</th>
@@ -198,7 +199,7 @@ if ($latestKey && isset($months[$latestKey])) {
           </thead>
           <tbody class="month-body">
             <?php foreach ($items as $row): ?>
-            <tr class="border-t border-gray-100 dark:border-[#222] hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition payment-row"
+            <tr class="even:bg-gray-50/50 dark:even:bg-[#0d0d0d] border-t border-gray-100 dark:border-[#222] hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition payment-row"
               data-nama="<?= strtolower(htmlspecialchars($row['nama_lengkap'])) ?>"
               data-status="<?= htmlspecialchars($row['status_bayar']) ?>"
               data-id="<?= (int)$row['id'] ?>"

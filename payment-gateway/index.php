@@ -70,10 +70,11 @@ $isConnected = !empty($config['server_key']);
 </head>
 <body class="bg-gray-100 dark:bg-[#0f0f0f] text-gray-800 dark:text-white">
 
+<?php $pageTitle = 'Payment Gateway'; ?>
 <?php $active = 'payment-gateway'; ?>
 <?php include '../components/sidebar.php'; ?>
 
-<div class="ml-64 p-8">
+<div class="lg:ml-64 p-4 lg:p-8 pt-4">
 
   <?php include '../components/topbar.php'; ?>
 

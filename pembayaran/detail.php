@@ -16,7 +16,7 @@
 <?php $active = 'pembayaran'; ?>
 <?php include '../components/sidebar.php'; ?>
 
-<div class="ml-64 p-8">
+<div class="lg:ml-64 p-4 lg:p-8 pt-4">
 
   <!-- TOPBAR -->
   <?php include '../components/topbar.php'; ?>

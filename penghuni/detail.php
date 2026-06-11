@@ -4,7 +4,7 @@ include '../config/auth.php';
 
 $id = intval($_GET['id'] ?? 0);
 if (!$id) {
-    echo "<script>alert('ID tidak valid');window.location='index.php';</script>";
+    header('Location: index.php?msg=' . urlencode('ID tidak valid') . '&type=error');
     exit;
 }
 
@@ -12,7 +12,7 @@ $query = mysqli_query($conn, "SELECT * FROM penghuni WHERE no = $id");
 $data = mysqli_fetch_assoc($query);
 
 if (!$data) {
-    echo "<script>alert('Data tidak ditemukan');window.location='index.php';</script>";
+    header('Location: index.php?msg=' . urlencode('Data tidak ditemukan') . '&type=error');
     exit;
 }
 ?>
@@ -31,10 +31,11 @@ if (!$data) {
 
 <body class="bg-gray-100 dark:bg-[#0f0f0f]">
 
+    <?php $pageTitle = 'Detail Penghuni'; ?>
     <?php $active = 'penghuni'; ?>
     <?php include '../components/sidebar.php'; ?>
 
-    <div class="ml-64 p-8">
+    <div class="lg:ml-64 p-4 lg:p-8 pt-4">
 
         <?php include '../components/topbar.php'; ?>
 

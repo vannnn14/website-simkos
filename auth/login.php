@@ -36,7 +36,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <title>SIMKOS Login</title>
 
   <?php include '../components/theme.php'; ?>
-  <style>body{overflow:hidden}</style>
 </head>
 
 <body class="bg-[#a1a197] dark:bg-[#8f9187] transition duration-500">
@@ -207,13 +206,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               Password
             </label>
 
-            <input
-              type="password"
-              name="password"
-              placeholder="••••••••"
-              required
-              class="w-full h-14 rounded-2xl border border-gray-300 dark:border-[#252525] bg-gray-100 dark:bg-[#0d0d0d] px-5 text-black dark:text-white outline-none focus:border-[#cfd7b0] focus:ring-4 focus:ring-[#cfd7b0]/10 transition"
-            >
+            <div class="relative">
+              <input
+                type="password"
+                name="password"
+                id="loginPassword"
+                placeholder="••••••••"
+                required
+                autocomplete="current-password"
+                class="w-full h-14 rounded-2xl border border-gray-300 dark:border-[#252525] bg-gray-100 dark:bg-[#0d0d0d] px-5 text-black dark:text-white outline-none focus:border-[#cfd7b0] focus:ring-4 focus:ring-[#cfd7b0]/10 transition pr-12"
+              >
+              <button type="button" onclick="togglePassword('loginPassword', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
+                <svg class="w-5 h-5 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <svg class="w-5 h-5 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+              </button>
+            </div>
 
           </div>
 
