@@ -234,7 +234,7 @@ ALTER TABLE `tagihan_utilitas`
 -- Constraints for table `detail_tagihan`
 --
 ALTER TABLE `detail_tagihan`
-  ADD CONSTRAINT `detail_tagihan_ibfk_1` FOREIGN KEY (`tagihan_id`) REFERENCES `tagihan_utilitas` (`id`),
+  ADD CONSTRAINT `detail_tagihan_ibfk_1` FOREIGN KEY (`tagihan_id`) REFERENCES `tagihan_utilitas` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `detail_tagihan_ibfk_2` FOREIGN KEY (`penghuni_id`) REFERENCES `penghuni` (`no`);
 
 --
@@ -242,7 +242,7 @@ ALTER TABLE `detail_tagihan`
 --
 ALTER TABLE `pembayaran`
   ADD CONSTRAINT `pembayaran_ibfk_1` FOREIGN KEY (`penghuni_id`) REFERENCES `penghuni` (`no`),
-  ADD CONSTRAINT `pembayaran_ibfk_2` FOREIGN KEY (`detail_tagihan_id`) REFERENCES `detail_tagihan` (`id`);
+  ADD CONSTRAINT `pembayaran_ibfk_2` FOREIGN KEY (`detail_tagihan_id`) REFERENCES `detail_tagihan` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
